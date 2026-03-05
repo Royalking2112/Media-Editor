@@ -2,376 +2,170 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MediaEditor Pro - Photo & Video Editing</title>
+    <title>CapCut Clone UI</title>
     <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome for Icons (Standard in Web Dev) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">🎬 MediaEditor Pro</div>
-            <ul class="nav-menu">
-                <li><a href="#" onclick="showHome()" class="nav-link">Home</a></li>
-                <li><a href="#" onclick="showPhotoEditor()" class="nav-link">Photo Editor</a></li>
-                <li><a href="#" onclick="showVideoEditor()" class="nav-link">Video Editor</a></li>
-            </ul>
+    <div class="app-container">
+        <!-- 1. TOP NAVIGATION -->
+        <header class="top-bar">
+            <div class="logo-section">
+                <i class="fas fa-scissors brand-icon"></i>
+                <span class="project-name">Untitled Project</span>
+            </div>
+            <div class="export-section">
+                <button class="btn-secondary">1080p <i class="fas fa-chevron-down"></i></button>
+                <button class="btn-primary">Export</button>
+            </div>
+        </header>
+
+        <div class="workspace">
+            <!-- 2. LEFT SIDEBAR (RESOURCES) -->
+            <aside class="sidebar-left">
+                <nav class="resource-nav">
+                    <div class="nav-item active"><i class="fas fa-photo-video"></i><small>Media</small></div>
+                    <div class="nav-item"><i class="fas fa-music"></i><small>Audio</small></div>
+                    <div class="nav-item"><i class="fas fa-font"></i><small>Text</small></div>
+                    <div class="nav-item"><i class="far fa-laugh-beam"></i><small>Stickers</small></div>
+                    <div class="nav-item"><i class="fas fa-magic"></i><small>Effects</small></div>
+                    <div class="nav-item"><i class="fas fa-random"></i><small>Transitions</small></div>
+                    <div class="nav-item"><i class="fas fa-sliders-h"></i><small>Filters</small></div>
+                </nav>
+                <div class="resource-panel">
+                    <div class="panel-header">
+                        <h3>Local Media</h3>
+                        <i class="fas fa-plus btn-icon"></i>
+                    </div>
+                    <div class="media-grid">
+                        <!-- Mock Media Items -->
+                        <div class="media-item" style="background-image: url('https://placehold.co/100x100/222/fff')"><span>00:15</span></div>
+                        <div class="media-item" style="background-image: url('https://placehold.co/100x100/333/fff')"><span>00:30</span></div>
+                        <div class="media-item" style="background-image: url('https://placehold.co/100x100/444/fff')"><span>01:05</span></div>
+                        <div class="media-item" style="background-image: url('https://placehold.co/100x100/555/fff')"><span>00:12</span></div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- 3. CENTER STAGE (PREVIEW & TIMELINE) -->
+            <main class="center-stage">
+                <!-- Preview Player -->
+                <div class="preview-area">
+                    <div class="video-canvas">
+                        <div class="placeholder-text">Player Preview</div>
+                    </div>
+                    <div class="player-controls">
+                        <span class="time-code">00:00:04 / 00:01:30</span>
+                        <div class="control-buttons">
+                            <i class="fas fa-step-backward"></i>
+                            <i class="fas fa-play-circle play-btn"></i>
+                            <i class="fas fa-step-forward"></i>
+                        </div>
+                        <div class="zoom-controls">
+                            <i class="fas fa-minus"></i>
+                            <div class="slider-track"></div>
+                            <i class="fas fa-plus"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Area -->
+                <div class="timeline-area">
+                    <div class="timeline-toolbar">
+                        <div class="tool-group">
+                            <button class="tool-btn" title="Undo"><i class="fas fa-undo"></i></button>
+                            <button class="tool-btn" title="Redo"><i class="fas fa-redo"></i></button>
+                        </div>
+                        <div class="tool-divider"></div>
+                        <div class="tool-group">
+                            <button class="tool-btn" title="Split (Ctrl+B)"><i class="fas fa-cut"></i> Split</button>
+                            <button class="tool-btn" title="Delete Left"><i class="fas fa-indent"></i></button>
+                            <button class="tool-btn" title="Delete Right"><i class="fas fa-outdent"></i></button>
+                            <button class="tool-btn" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                        <div class="tool-divider"></div>
+                        <div class="tool-group">
+                            <button class="tool-btn"><i class="fas fa-snowflake"></i> Freeze</button>
+                            <button class="tool-btn"><i class="fas fa-history"></i> Reverse</button>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-tracks">
+                        <div class="time-ruler">
+                            <span>00:00</span><span>00:15</span><span>00:30</span><span>00:45</span><span>01:00</span>
+                        </div>
+                        <!-- Video Track -->
+                        <div class="track-row">
+                            <div class="track-header"><i class="fas fa-video"></i></div>
+                            <div class="track-content">
+                                <div class="clip video-clip" style="width: 200px; left: 0;">Clip_01.mp4</div>
+                                <div class="clip video-clip" style="width: 150px; left: 205px;">Clip_02.mp4</div>
+                            </div>
+                        </div>
+                        <!-- Audio Track -->
+                        <div class="track-row">
+                            <div class="track-header"><i class="fas fa-volume-up"></i></div>
+                            <div class="track-content">
+                                <div class="clip audio-clip" style="width: 350px; left: 0;">Background_Music.mp3</div>
+                            </div>
+                        </div>
+                        <div class="playhead"></div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- 4. RIGHT SIDEBAR (PROPERTIES) -->
+            <aside class="sidebar-right">
+                <div class="property-tabs">
+                    <div class="tab active">Video</div>
+                    <div class="tab">Audio</div>
+                    <div class="tab">Speed</div>
+                    <div class="tab">Anim</div>
+                </div>
+                <div class="property-content">
+                    <!-- Transform Group -->
+                    <div class="prop-group">
+                        <div class="prop-header">
+                            <span>Scale</span>
+                            <span class="value-display">100%</span>
+                        </div>
+                        <input type="range" min="0" max="200" value="100" class="prop-slider">
+                    </div>
+                    <div class="prop-group">
+                        <div class="prop-header">
+                            <span>Position X</span>
+                            <span class="value-display">0</span>
+                        </div>
+                        <input type="range" min="-500" max="500" value="0" class="prop-slider">
+                    </div>
+                    <div class="prop-group">
+                        <div class="prop-header">
+                            <span>Position Y</span>
+                            <span class="value-display">0</span>
+                        </div>
+                        <input type="range" min="-500" max="500" value="0" class="prop-slider">
+                    </div>
+                    <div class="prop-group">
+                        <div class="prop-header">
+                            <span>Rotation</span>
+                            <span class="value-display">0°</span>
+                        </div>
+                        <input type="range" min="0" max="360" value="0" class="prop-slider">
+                    </div>
+                    
+                    <!-- Blend Mode Group -->
+                    <div class="prop-group border-top">
+                        <div class="prop-header">
+                            <span>Opacity</span>
+                            <span class="value-display">100%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="100" class="prop-slider">
+                    </div>
+                </div>
+            </aside>
         </div>
-    </nav>
-
-    <!-- Home Section -->
-    <section id="home-section" class="main-section show">
-        <div class="hero">
-            <div class="hero-content">
-                <h1>Professional Media Editing</h1>
-                <p>Free online editor for photos and videos</p>
-                <div class="hero-buttons">
-                    <button class="btn btn-primary" onclick="showPhotoEditor()">📸 Photo Editor</button>
-                    <button class="btn btn-secondary" onclick="showVideoEditor()">🎥 Video Editor</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="features-section">
-            <div class="container">
-                <h2>Why Choose MediaEditor Pro?</h2>
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">🖼️</div>
-                        <h3>Photo Editing</h3>
-                        <p>Crop, rotate, apply filters, adjust colors, and more</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🎥</div>
-                        <h3>Video Editing</h3>
-                        <p>Trim, adjust speed, add effects, edit audio</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">⚡</div>
-                        <h3>Fast & Free</h3>
-                        <p>No installation, no watermarks, 100% free</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Photo Editor Section -->
-    <section id="photo-section" class="main-section">
-        <div class="editor-container">
-            <!-- Left Side - Preview & Upload -->
-            <div class="editor-left">
-                <div class="preview-section">
-                    <div class="upload-area" id="photoUploadArea">
-                        <input type="file" id="photoInput" accept="image/*" hidden>
-                        <div class="upload-placeholder">
-                            <p>📷 Click to upload or drag photo here</p>
-                            <small>JPG, PNG, GIF supported</small>
-                        </div>
-                    </div>
-                    <canvas id="photoCanvas" style="display: none; width: 100%; border-radius: 8px;"></canvas>
-                </div>
-
-                <!-- Active Effects Display -->
-                <div class="active-effects">
-                    <h4>✨ Active Adjustments:</h4>
-                    <div id="photoEffectsList"></div>
-                </div>
-            </div>
-
-            <!-- Right Side - Controls -->
-            <div class="editor-right">
-                <div class="controls-container">
-                    <!-- Quick Actions -->
-                    <div class="control-section">
-                        <h3>⚡ Quick Actions</h3>
-                        <div class="action-buttons">
-                            <button class="btn-action" onclick="downloadPhoto()">⬇️ Download</button>
-                            <button class="btn-action btn-danger" onclick="resetAllPhoto()">🔄 Reset All</button>
-                        </div>
-                    </div>
-
-                    <!-- Basic Tools -->
-                    <div class="control-section">
-                        <h3>🛠️ Basic Tools</h3>
-                        <div class="tool-buttons">
-                            <button class="tool-btn" onclick="rotatePhoto90()">🔄 Rotate 90°</button>
-                            <button class="tool-btn" onclick="flipPhotoHorizontal()">↔️ Flip H</button>
-                            <button class="tool-btn" onclick="flipPhotoVertical()">↕️ Flip V</button>
-                            <button class="tool-btn" onclick="resizePhotoDialog()">📏 Resize</button>
-                        </div>
-                    </div>
-
-                    <!-- Filters -->
-                    <div class="control-section">
-                        <h3>🎨 Filters</h3>
-                        <div class="filter-buttons">
-                            <button class="filter-btn" onclick="applyPhotoFilter('original')">Original</button>
-                            <button class="filter-btn" onclick="applyPhotoFilter('grayscale')">⚫ B&W</button>
-                            <button class="filter-btn" onclick="applyPhotoFilter('sepia')">🟤 Sepia</button>
-                            <button class="filter-btn" onclick="applyPhotoFilter('vintage')">📸 Vintage</button>
-                            <button class="filter-btn" onclick="applyPhotoFilter('cool')">❄️ Cool</button>
-                            <button class="filter-btn" onclick="applyPhotoFilter('warm')">🔥 Warm</button>
-                            <button class="filter-btn" onclick="applyPhotoFilter('invert')">🔲 Invert</button>
-                        </div>
-                    </div>
-
-                    <!-- Adjustments -->
-                    <div class="control-section">
-                        <h3>🎚️ Adjustments</h3>
-                        
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>☀️ Brightness</label>
-                                <span class="slider-value" id="photoBrightnessValue">100%</span>
-                            </div>
-                            <input type="range" id="photoBrightness" min="0" max="200" value="100" class="slider" oninput="updatePhotoAdjustment('brightness')">
-                        </div>
-
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>◐ Contrast</label>
-                                <span class="slider-value" id="photoContrastValue">100%</span>
-                            </div>
-                            <input type="range" id="photoContrast" min="0" max="200" value="100" class="slider" oninput="updatePhotoAdjustment('contrast')">
-                        </div>
-
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>🎨 Saturation</label>
-                                <span class="slider-value" id="photoSaturationValue">100%</span>
-                            </div>
-                            <input type="range" id="photoSaturation" min="0" max="200" value="100" class="slider" oninput="updatePhotoAdjustment('saturation')">
-                        </div>
-
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>🌈 Hue</label>
-                                <span class="slider-value" id="photoHueValue">0°</span>
-                            </div>
-                            <input type="range" id="photoHue" min="0" max="360" value="0" class="slider" oninput="updatePhotoAdjustment('hue')">
-                        </div>
-
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>☀️ Exposure</label>
-                                <span class="slider-value" id="photoExposureValue">0</span>
-                            </div>
-                            <input type="range" id="photoExposure" min="-50" max="50" value="0" class="slider" oninput="updatePhotoAdjustment('exposure')">
-                        </div>
-
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>🎯 Sharpness</label>
-                                <span class="slider-value" id="photoSharpnessValue">0</span>
-                            </div>
-                            <input type="range" id="photoSharpness" min="0" max="100" value="0" class="slider" oninput="updatePhotoAdjustment('sharpness')">
-                        </div>
-
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>👻 Opacity</label>
-                                <span class="slider-value" id="photoOpacityValue">100%</span>
-                            </div>
-                            <input type="range" id="photoOpacity" min="0" max="100" value="100" class="slider" oninput="updatePhotoAdjustment('opacity')">
-                        </div>
-                    </div>
-
-                    <!-- Effects -->
-                    <div class="control-section">
-                        <h3>✨ Effects</h3>
-                        <div class="effect-buttons">
-                            <button class="effect-btn" onclick="applyPhotoEffect('glow')">💫 Glow</button>
-                            <button class="effect-btn" onclick="applyPhotoEffect('vignette')">🎯 Vignette</button>
-                            <button class="effect-btn" onclick="applyPhotoEffect('fade')">🌅 Fade</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Video Editor Section -->
-    <section id="video-section" class="main-section">
-        <div class="editor-container">
-            <!-- Left Side - Preview & Upload -->
-            <div class="editor-left">
-                <div class="preview-section">
-                    <div class="upload-area" id="videoUploadArea">
-                        <input type="file" id="videoInput" accept="video/*" hidden>
-                        <div class="upload-placeholder">
-                            <p>🎬 Click to upload or drag video here</p>
-                            <small>MP4, WebM, Ogg supported</small>
-                        </div>
-                    </div>
-                    <video id="videoPreview" style="display: none; width: 100%; border-radius: 8px; background: #000;" controls></video>
-                </div>
-
-                <!-- Timeline -->
-                <div class="timeline-section" id="timelineSection" style="display: none;">
-                    <h4>⏱️ Timeline</h4>
-                    <div class="timeline">
-                        <span id="currentTimeDisplay">0:00</span>
-                        <input type="range" id="videoTimeline" class="timeline-slider" oninput="seekVideo()" min="0" value="0">
-                        <span id="durationDisplay">0:00</span>
-                    </div>
-                </div>
-
-                <!-- Active Effects Display -->
-                <div class="active-effects">
-                    <h4>✨ Active Adjustments:</h4>
-                    <div id="videoEffectsList"></div>
-                </div>
-            </div>
-
-            <!-- Right Side - Controls -->
-            <div class="editor-right">
-                <div class="controls-container">
-                    <!-- Playback Controls -->
-                    <div class="control-section">
-                        <h3>▶️ Playback</h3>
-                        <div class="playback-buttons" id="videoPlaybackControls" style="display: none;">
-                            <button class="btn-action" id="videoPlayBtn" onclick="toggleVideoPlay()">▶️ Play</button>
-                            <button class="btn-action" onclick="pauseVideo()">⏸️ Pause</button>
-                            <button class="btn-action" onclick="stopVideo()">⏹️ Stop</button>
-                        </div>
-                    </div>
-
-                    <!-- Quick Actions -->
-                    <div class="control-section">
-                        <h3>⚡ Quick Actions</h3>
-                        <div class="action-buttons">
-                            <button class="btn-action" onclick="downloadVideo()">⬇️ Download</button>
-                            <button class="btn-action btn-danger" onclick="resetAllVideo()">🔄 Reset All</button>
-                        </div>
-                    </div>
-
-                    <!-- Edit Tools -->
-                    <div class="control-section">
-                        <h3>✂️ Edit Tools</h3>
-                        <div class="tool-buttons">
-                            <button class="tool-btn" onclick="activateVideoTrim()">✂️ Trim</button>
-                            <button class="tool-btn" onclick="reverseVideo()">⏮️ Reverse</button>
-                            <button class="tool-btn" onclick="freezeFrame()">⏸️ Freeze</button>
-                        </div>
-                    </div>
-
-                    <!-- Audio Controls -->
-                    <div class="control-section">
-                        <h3>🔊 Audio Controls</h3>
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>🔊 Volume</label>
-                                <span class="slider-value" id="videoVolumeValue">100%</span>
-                            </div>
-                            <input type="range" id="videoVolume" min="0" max="100" value="100" class="slider" oninput="updateVideoAdjustment('volume')">
-                        </div>
-
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>⏱️ Speed</label>
-                                <span class="slider-value" id="videoSpeedValue">1.0x</span>
-                            </div>
-                            <input type="range" id="videoSpeed" min="0.5" max="2" step="0.25" value="1" class="slider" oninput="updateVideoAdjustment('speed')">
-                        </div>
-
-                        <div class="tool-buttons">
-                            <button class="tool-btn" onclick="muteVideo()">🔇 Mute</button>
-                            <button class="tool-btn" onclick="unmuteVideo()">🔊 Unmute</button>
-                        </div>
-                    </div>
-
-                    <!-- Video Adjustments -->
-                    <div class="control-section">
-                        <h3>🎚️ Adjustments</h3>
-                        
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>☀️ Brightness</label>
-                                <span class="slider-value" id="videoBrightnessValue">100%</span>
-                            </div>
-                            <input type="range" id="videoBrightness" min="0" max="200" value="100" class="slider" oninput="updateVideoAdjustment('brightness')">
-                        </div>
-
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>◐ Contrast</label>
-                                <span class="slider-value" id="videoContrastValue">100%</span>
-                            </div>
-                            <input type="range" id="videoContrast" min="0" max="200" value="100" class="slider" oninput="updateVideoAdjustment('contrast')">
-                        </div>
-
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>🎨 Saturation</label>
-                                <span class="slider-value" id="videoSaturationValue">100%</span>
-                            </div>
-                            <input type="range" id="videoSaturation" min="0" max="200" value="100" class="slider" oninput="updateVideoAdjustment('saturation')">
-                        </div>
-
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>🌈 Hue</label>
-                                <span class="slider-value" id="videoHueValue">0°</span>
-                            </div>
-                            <input type="range" id="videoHue" min="0" max="360" value="0" class="slider" oninput="updateVideoAdjustment('hue')">
-                        </div>
-
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>👻 Opacity</label>
-                                <span class="slider-value" id="videoOpacityValue">100%</span>
-                            </div>
-                            <input type="range" id="videoOpacity" min="0" max="100" value="100" class="slider" oninput="updateVideoAdjustment('opacity')">
-                        </div>
-                    </div>
-
-                    <!-- Filters -->
-                    <div class="control-section">
-                        <h3>🎬 Filters</h3>
-                        <div class="filter-buttons">
-                            <button class="filter-btn" onclick="applyVideoFilter('original')">Original</button>
-                            <button class="filter-btn" onclick="applyVideoFilter('grayscale')">⚫ B&W</button>
-                            <button class="filter-btn" onclick="applyVideoFilter('sepia')">🟤 Sepia</button>
-                            <button class="filter-btn" onclick="applyVideoFilter('cool')">❄️ Cool</button>
-                            <button class="filter-btn" onclick="applyVideoFilter('warm')">🔥 Warm</button>
-                            <button class="filter-btn" onclick="applyVideoFilter('invert')">🔲 Invert</button>
-                        </div>
-                    </div>
-
-                    <!-- Effects -->
-                    <div class="control-section">
-                        <h3>✨ Effects</h3>
-                        <div class="effect-buttons">
-                            <button class="effect-btn" onclick="applyVideoEffect('blur')">🌫️ Blur</button>
-                            <button class="effect-btn" onclick="applyVideoEffect('glow')">💫 Glow</button>
-                            <button class="effect-btn" onclick="applyVideoEffect('fade')">🌅 Fade</button>
-                        </div>
-                    </div>
-
-                    <!-- Trim Controls -->
-                    <div class="control-section" id="videoTrimControls" style="display: none;">
-                        <h3>✂️ Trim Video</h3>
-                        <div class="trim-buttons">
-                            <button class="btn-action" onclick="setTrimStart()">⏹️ Mark Start</button>
-                            <button class="btn-action" onclick="setTrimEnd()">⏹️ Mark End</button>
-                            <button class="btn-action btn-danger" onclick="resetTrim()">🔄 Reset Trim</button>
-                        </div>
-                        <p id="trimInfo">No trim set</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Notification -->
-    <div id="notification" class="notification"></div>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <p>&copy; 2026 MediaEditor Pro. Built by Royalking2112 ❤️</p>
-    </footer>
-
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
