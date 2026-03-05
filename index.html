@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Editor - Video & Photo Editing Online</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🎬 MediaEditor</div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#photo" class="nav-link">Photo Editor</a></li>
+                <li><a href="#video" class="nav-link">Video Editor</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>Professional Media Editing</h1>
+            <p>Edit your photos and videos with ease. No software download required!</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary" onclick="scrollTo('photo')">Photo Editor</button>
+                <button class="btn btn-secondary" onclick="scrollTo('video')">Video Editor</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Photo Editor Section -->
+    <section id="photo" class="editor-section">
+        <div class="container">
+            <h2>Photo Editor</h2>
+            
+            <div class="editor-layout">
+                <div class="editor-preview">
+                    <canvas id="photoCanvas"></canvas>
+                    <p class="placeholder" id="photoPlaceholder">Upload an image to start editing</p>
+                </div>
+
+                <div class="editor-controls">
+                    <div class="control-group">
+                        <label for="photoInput">Upload Image:</label>
+                        <input type="file" id="photoInput" accept="image/*">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="brightness">Brightness: <span id="brightnessValue">100</span>%</label>
+                        <input type="range" id="brightness" min="0" max="200" value="100">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="contrast">Contrast: <span id="contrastValue">100</span>%</label>
+                        <input type="range" id="contrast" min="0" max="200" value="100">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="saturation">Saturation: <span id="saturationValue">100</span>%</label>
+                        <input type="range" id="saturation" min="0" max="200" value="100">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="hue">Hue: <span id="hueValue">0</span>°</label>
+                        <input type="range" id="hue" min="0" max="360" value="0">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="blur">Blur: <span id="blurValue">0</span>px</label>
+                        <input type="range" id="blur" min="0" max="20" value="0">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="rotate">Rotate: <span id="rotateValue">0</span>°</label>
+                        <input type="range" id="rotate" min="0" max="360" value="0">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="scale">Scale: <span id="scaleValue">100</span>%</label>
+                        <input type="range" id="scale" min="50" max="150" value="100">
+                    </div>
+
+                    <div class="filter-buttons">
+                        <button class="filter-btn" onclick="applyFilter('grayscale')">Grayscale</button>
+                        <button class="filter-btn" onclick="applyFilter('sepia')">Sepia</button>
+                        <button class="filter-btn" onclick="applyFilter('invert')">Invert</button>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="downloadPhoto()">Download Photo</button>
+                        <button class="btn btn-secondary" onclick="resetPhoto()">Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Editor Section -->
+    <section id="video" class="editor-section">
+        <div class="container">
+            <h2>Video Editor</h2>
+            
+            <div class="video-editor">
+                <div class="video-preview">
+                    <video id="videoPreview" controls>
+                        <p>Your browser does not support HTML5 video.</p>
+                    </video>
+                    <p class="placeholder" id="videoPlaceholder">Upload a video to start editing</p>
+                </div>
+
+                <div class="video-controls">
+                    <div class="control-group">
+                        <label for="videoInput">Upload Video:</label>
+                        <input type="file" id="videoInput" accept="video/*">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="videoSpeed">Playback Speed: <span id="speedValue">1.0</span>x</label>
+                        <input type="range" id="videoSpeed" min="0.5" max="2" step="0.25" value="1.0">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="videoVolume">Volume: <span id="volumeValue">100</span>%</label>
+                        <input type="range" id="videoVolume" min="0" max="100" value="100">
+                    </div>
+
+                    <div class="trim-section">
+                        <h4>Trim Video</h4>
+                        <p>Current Time: <span id="currentTime">0:00</span></p>
+                        <div class="trim-buttons">
+                            <button class="btn btn-small" onclick="markStart()">Mark Start</button>
+                            <button class="btn btn-small" onclick="markEnd()">Mark End</button>
+                            <button class="btn btn-small" onclick="resetTrim()">Reset Trim</button>
+                        </div>
+                        <p id="trimInfo" class="trim-info">No trim set</p>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="videoBrightness">Brightness: <span id="videoBrightnessValue">100</span>%</label>
+                        <input type="range" id="videoBrightness" min="0" max="200" value="100">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="videoContrast">Contrast: <span id="videoContrastValue">100</span>%</label>
+                        <input type="range" id="videoContrast" min="0" max="200" value="100">
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="downloadVideo()">Download Video</button>
+                        <button class="btn btn-secondary" onclick="resetVideo()">Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <h2>About MediaEditor</h2>
+            <p>MediaEditor is a free, online tool for editing photos and videos. No installation required - just upload your media and start editing!</p>
+            <div class="features">
+                <div class="feature">
+                    <h3>🖼️ Photo Editing</h3>
+                    <p>Adjust brightness, contrast, saturation, and apply filters to your photos.</p>
+                </div>
+                <div class="feature">
+                    <h3>🎥 Video Editing</h3>
+                    <p>Trim, adjust speed, control volume, and modify brightness on your videos.</p>
+                </div>
+                <div class="feature">
+                    <h3>⚡ Fast & Free</h3>
+                    <p>Edit your media instantly without any cost or software installation.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 MediaEditor. All rights reserved. Built with ❤️ by </p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
