@@ -1,3 +1,91 @@
+// ==================== UTILITY FUNCTIONS ====================
+
+function toggleMenu(menuId) {
+    const menu = document.getElementById(menuId);
+    
+    // Close all other menus
+    document.querySelectorAll('.dropdown-menu').forEach(m => {
+        if (m.id !== menuId) {
+            m.classList.remove('show');
+        }
+    });
+    
+    // Toggle current menu
+    menu.classList.toggle('show');
+}
+
+function showNotification(message) {
+    const toast = document.getElementById('notificationToast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+function scrollTo(sectionId) {
+    const section = document.getElementById(sectionId);
+    if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+function toggleAdjustPanel(panelType) {
+    showNotification(`${panelType.charAt(0).toUpperCase() + panelType.slice(1)} adjustment activated`);
+    // Close menus
+    document.querySelectorAll('.dropdown-menu').forEach(m => {
+        m.classList.remove('show');
+    });
+}
+
+function activateTool(toolName) {
+    const displayName = toolName.charAt(0).toUpperCase() + toolName.slice(1);
+    showNotification(`${displayName} tool activated`);
+    document.querySelectorAll('.dropdown-menu').forEach(m => {
+        m.classList.remove('show');
+    });
+}
+
+function activateVideoTool(toolName) {
+    const toolNames = {
+        'split': '✂️ Split',
+        'crop': '🔲 Crop',
+        'duplicate': '📋 Duplicate',
+        'delete': '🗑️ Delete',
+        'replace': '🔄 Replace',
+        'freeze': '⏸️ Freeze',
+        'reverse': '⏮️ Reverse',
+        'extractAudio': '📤 Extract Audio',
+        'isolateVoice': '🎤 Isolate Voice',
+        'reduceNoise': '🔇 Reduce Noise',
+        'enhanceVoice': '📢 Enhance Voice',
+        'audioEffects': '🎶 Audio Effects',
+        'beats': '🎵 Beats Detection',
+        'animation': '🎨 Animation',
+        'effects': '✨ Effects',
+        'motionBlur': '⚡ Motion Blur',
+        'overlay': '📐 Overlay',
+        'relight': '💡 Relight',
+        'filters': '🎬 Filters',
+        'mask': '👤 Mask',
+        'speed': '⏱️ Speed',
+        'transform': '🔄 Transform',
+        'autoReframe': '📺 Auto Reframe',
+        'stabilization': '🎯 Stabilization',
+        'brightness': '☀️ Brightness',
+        'contrast': '◐ Contrast',
+        'opacity': '👻 Opacity',
+        'unlink': '🔗 Unlink'
+    };
+    
+    const displayName = toolNames[toolName] || toolName;
+    showNotification(`${displayName} tool activated`);
+    document.querySelectorAll('.dropdown-menu').forEach(m => {
+        m.classList.remove('show');
+    });
+}
+
 // ==================== PHOTO EDITOR ====================
 
 let photoImage = null;
@@ -21,6 +109,7 @@ photoInput.addEventListener('change', function(e) {
             document.getElementById('photoPlaceholder').style.display = 'none';
             photoCanvas.style.display = 'block';
             updatePhoto();
+            showNotification('Photo uploaded successfully!');
         };
         img.src = event.target.result;
     };
@@ -39,6 +128,7 @@ function updatePhoto() {
     const blur = document.getElementById('blur').value;
     const rotate = document.getElementById('rotate').value;
     const scale = document.getElementById('scale').value / 100;
+    const opacity = document.getElementById('opacity').value / 100;
     
     photoContext.clearRect(0, 0, photoCanvas.width, photoCanvas.height);
     photoContext.save();
@@ -58,6 +148,7 @@ function updatePhoto() {
         blur(${blur}px)
     `;
     
+    photoContext.globalAlpha = opacity;
     photoContext.drawImage(photoImage, 0, 0);
     photoContext.restore();
     
@@ -69,6 +160,7 @@ function updatePhoto() {
     document.getElementById('blurValue').textContent = blur;
     document.getElementById('rotateValue').textContent = rotate;
     document.getElementById('scaleValue').textContent = Math.round(scale * 100);
+    document.getElementById('opacityValue').textContent = document.getElementById('opacity').value;
 }
 
 // Photo range input listeners
@@ -79,9 +171,10 @@ document.getElementById('hue').addEventListener('input', updatePhoto);
 document.getElementById('blur').addEventListener('input', updatePhoto);
 document.getElementById('rotate').addEventListener('input', updatePhoto);
 document.getElementById('scale').addEventListener('input', updatePhoto);
+document.getElementById('opacity').addEventListener('input', updatePhoto);
 
 // Apply filters to photo
-function applyFilter(filterType) {
+function applyPhotoFilter(filterType) {
     if (!photoImage || !photoContext) {
         alert('Please upload an image first!');
         return;
@@ -96,12 +189,53 @@ function applyFilter(filterType) {
         case 'sepia':
             photoContext.filter = 'sepia(100%)';
             break;
+        case 'vintage':
+            photoContext.filter = 'sepia(60%) saturate(150%) brightness(110%)';
+            break;
+        case 'cool':
+            photoContext.filter = 'hue-rotate(200deg) saturation(120%) brightness(95%)';
+            break;
+        case 'warm':
+            photoContext.filter = 'hue-rotate(20deg) saturation(120%) brightness(105%)';
+            break;
         case 'invert':
             photoContext.filter = 'invert(100%)';
             break;
     }
     
     photoContext.drawImage(photoImage, 0, 0);
+    showNotification(`${filterType.charAt(0).toUpperCase() + filterType.slice(1)} filter applied!`);
+}
+
+// Apply effects to photo
+function applyPhotoEffect(effectType) {
+    if (!photoImage || !photoContext) {
+        alert('Please upload an image first!');
+        return;
+    }
+    
+    photoContext.clearRect(0, 0, photoCanvas.width, photoCanvas.height);
+    
+    switch(effectType) {
+        case 'blur':
+            photoContext.filter = 'blur(8px)';
+            break;
+        case 'sharpen':
+            photoContext.filter = 'contrast(150%)';
+            break;
+        case 'glow':
+            photoContext.filter = 'brightness(120%) blur(2px)';
+            break;
+        case 'vignette':
+            photoContext.filter = 'brightness(90%) saturate(110%)';
+            break;
+        case 'retouch':
+            photoContext.filter = 'brightness(105%) contrast(110%) saturate(120%)';
+            break;
+    }
+    
+    photoContext.drawImage(photoImage, 0, 0);
+    showNotification(`${effectType.charAt(0).toUpperCase() + effectType.slice(1)} effect applied!`);
 }
 
 // Download photo
@@ -115,6 +249,7 @@ function downloadPhoto() {
     link.href = photoCanvas.toDataURL('image/png');
     link.download = `edited-photo-${Date.now()}.png`;
     link.click();
+    showNotification('Photo downloaded successfully!');
 }
 
 // Reset photo
@@ -126,7 +261,9 @@ function resetPhoto() {
     document.getElementById('blur').value = 0;
     document.getElementById('rotate').value = 0;
     document.getElementById('scale').value = 100;
+    document.getElementById('opacity').value = 100;
     updatePhoto();
+    showNotification('Photo reset to original!');
 }
 
 // ==================== VIDEO EDITOR ====================
@@ -148,6 +285,8 @@ videoInput.addEventListener('change', function(e) {
     videoElement.addEventListener('loadedmetadata', function() {
         updateVideoTime();
     });
+    
+    showNotification('Video uploaded successfully!');
 });
 
 // Update video playback speed
@@ -171,6 +310,12 @@ document.getElementById('videoBrightness').addEventListener('input', function(e)
 document.getElementById('videoContrast').addEventListener('input', function(e) {
     videoElement.style.filter = `brightness(${document.getElementById('videoBrightness').value}%) contrast(${e.target.value}%)`;
     document.getElementById('videoContrastValue').textContent = e.target.value;
+});
+
+// Update video opacity
+document.getElementById('videoOpacity').addEventListener('input', function(e) {
+    videoElement.style.opacity = e.target.value / 100;
+    document.getElementById('videoOpacityValue').textContent = e.target.value;
 });
 
 // Update current time display
@@ -197,6 +342,7 @@ function markStart() {
     }
     trimStart = videoElement.currentTime;
     updateTrimInfo();
+    showNotification('Trim start marked!');
 }
 
 // Mark trim end
@@ -207,6 +353,7 @@ function markEnd() {
     }
     trimEnd = videoElement.currentTime;
     updateTrimInfo();
+    showNotification('Trim end marked!');
 }
 
 // Reset trim
@@ -214,6 +361,7 @@ function resetTrim() {
     trimStart = null;
     trimEnd = null;
     updateTrimInfo();
+    showNotification('Trim reset!');
 }
 
 // Update trim info display
@@ -235,7 +383,7 @@ function downloadVideo() {
         return;
     }
     
-    alert('Video download note: Due to browser limitations, the edited video will be the original file with applied visual effects. For advanced trimming and exporting, please use desktop software like CapCut or DaVinci Resolve.');
+    showNotification('Video download initiated. Advanced features require desktop software.');
     
     const link = document.createElement('a');
     link.href = videoElement.src;
@@ -249,24 +397,21 @@ function resetVideo() {
     document.getElementById('videoContrast').value = 100;
     document.getElementById('videoSpeed').value = 1.0;
     document.getElementById('videoVolume').value = 100;
+    document.getElementById('videoOpacity').value = 100;
     videoElement.playbackRate = 1.0;
     videoElement.volume = 1.0;
     videoElement.style.filter = 'brightness(100%) contrast(100%)';
+    videoElement.style.opacity = 1;
     document.getElementById('videoBrightnessValue').textContent = '100';
     document.getElementById('videoContrastValue').textContent = '100';
+    document.getElementById('videoOpacityValue').textContent = '100';
     document.getElementById('speedValue').textContent = '1.0';
     document.getElementById('volumeValue').textContent = '100';
     resetTrim();
+    showNotification('Video reset to original!');
 }
 
 // ==================== NAVIGATION ====================
-
-function scrollTo(sectionId) {
-    const section = document.getElementById(sectionId);
-    if (section) {
-        section.scrollIntoView({ behavior: 'smooth' });
-    }
-}
 
 // Smooth scroll for nav links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -277,4 +422,13 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             target.scrollIntoView({ behavior: 'smooth' });
         }
     });
+});
+
+// Close menus when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.edit-btn') && !e.target.closest('.dropdown-menu')) {
+        document.querySelectorAll('.dropdown-menu').forEach(m => {
+            m.classList.remove('show');
+        });
+    }
 });
