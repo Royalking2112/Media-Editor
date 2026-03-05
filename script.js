@@ -392,3 +392,274 @@ function showNotification(msg) {
     notification.classList.add('show');
     setTimeout(() => notification.classList.remove('show'), 3000);
 }
+// Video Editor Script - Full Manual Control
+
+let videoPreview = document.getElementById('videoPreview');
+let videoInput = document.getElementById('videoInput');
+let uploadArea = document.getElementById('uploadArea');
+
+let videoAdjustments = {
+    brightness: 100,
+    contrast: 100,
+    saturation: 100,
+    hue: 0,
+    volume: 100,
+    speed: 1,
+    opacity: 100
+};
+
+let activeVideoFilters = {};
+let videoActionHistory = [];
+let trimStart = null;
+let trimEnd = null;
+
+// ==================== UPLOAD FUNCTIONALITY ====================
+
+uploadArea.addEventListener('click', () => videoInput.click());
+
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = '#764ba2';
+});
+
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.style.borderColor = '#667eea';
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('video/')) {
+        loadVideo(file);
+    }
+});
+
+videoInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) loadVideo(file);
+});
+
+function loadVideo(file) {
+    const url = URL.createObjectURL(file);
+    videoPreview.src = url;
+    uploadArea.style.display = 'none';
+    videoPreview.style.display = 'block';
+    document.getElementById('timelineSection').style.display = 'block';
+    document.getElementById('playbackControls').style.display = 'flex';
+    document.getElementById('trimControls').style.display = 'block';
+    showNotification('✅ Video loaded successfully!');
+}
+
+// ==================== VIDEO PLAYBACK ====================
+
+videoPreview.addEventListener('loadedmetadata', () => {
+    document.getElementById('videoTimeline').max = Math.floor(videoPreview.duration);
+    updateTimeDisplay();
+});
+
+videoPreview.addEventListener('timeupdate', () => {
+    document.getElementById('videoTimeline').value = Math.floor(videoPreview.currentTime);
+    updateTimeDisplay();
+});
+
+function updateTimeDisplay() {
+    const current = formatTime(videoPreview.currentTime);
+    const duration = formatTime(videoPreview.duration);
+    document.getElementById('currentTimeDisplay').textContent = current;
+    document.getElementById('durationDisplay').textContent = duration;
+}
+
+function formatTime(seconds) {
+    if (isNaN(seconds)) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+function seekVideo() {
+    videoPreview.currentTime = document.getElementById('videoTimeline').value;
+}
+
+function togglePlayVideo() {
+    const btn = document.getElementById('playBtn');
+    if (videoPreview.paused) {
+        videoPreview.play();
+        btn.textContent = '⏸️ Pause';
+    } else {
+        videoPreview.pause();
+        btn.textContent = '▶️ Play';
+    }
+}
+
+function stopVideo() {
+    videoPreview.pause();
+    videoPreview.currentTime = 0;
+    document.getElementById('playBtn').textContent = '▶️ Play';
+}
+
+// ==================== MANUAL VIDEO ADJUSTMENTS ====================
+
+function updateVideoAdjustment(type) {
+    const value = document.getElementById(type).value;
+    
+    videoAdjustments[type] = parseFloat(value);
+    
+    // Update display
+    const displayId = type + 'Display';
+    const displayElement = document.getElementById(displayId);
+    if (displayElement) {
+        if (type === 'speed') {
+            displayElement.textContent = value + 'x';
+            videoPreview.playbackRate = parseFloat(value);
+        } else if (type === 'volume') {
+            displayElement.textContent = value + '%';
+            videoPreview.volume = parseFloat(value) / 100;
+        } else if (type === 'brightness' || type === 'contrast' || type === 'saturation' || type === 'opacity') {
+            displayElement.textContent = value + '%';
+        } else if (type === 'hue') {
+            displayElement.textContent = value + '°';
+        }
+    }
+
+    applyVideoFilters();
+    saveVideoHistory();
+}
+
+function applyVideoFilters() {
+    const { brightness, contrast, saturation, hue, opacity } = videoAdjustments;
+    videoPreview.style.filter = `
+        brightness(${brightness}%)
+        contrast(${contrast}%)
+        saturate(${saturation}%)
+        hue-rotate(${hue}deg)
+    `;
+    videoPreview.style.opacity = opacity / 100;
+    updateEffectsList();
+}
+
+// ==================== VIDEO FILTERS ====================
+
+function applyVideoFilter(filterName) {
+    if (!videoPreview.src) return showNotification('🎥 Upload a video first!');
+
+    if (filterName === 'original') {
+        activeVideoFilters = {};
+        videoAdjustments = {
+            brightness: 100,
+            contrast: 100,
+            saturation: 100,
+            hue: 0,
+            volume: 100,
+            speed: 1,
+            opacity: 100
+        };
+        resetAllVideoSliders();
+        applyVideoFilters();
+        showNotification('✨ Original filter applied!');
+        return;
+    }
+
+    activeVideoFilters[filterName] = true;
+
+    switch(filterName) {
+        case 'grayscale':
+            videoAdjustments.saturation = 0;
+            break;
+        case 'sepia':
+            videoAdjustments.saturation = 50;
+            videoAdjustments.hue = 30;
+            break;
+        case 'cool':
+            videoAdjustments.hue = 180;
+            videoAdjustments.saturation = 120;
+            videoAdjustments.brightness = 95;
+            break;
+        case 'warm':
+            videoAdjustments.hue = 20;
+            videoAdjustments.saturation = 120;
+            videoAdjustments.brightness = 110;
+            break;
+        case 'invert':
+            videoAdjustments.brightness = 100;
+            videoAdjustments.contrast = 100;
+            break;
+    }
+
+    updateAllVideoSliders();
+    saveVideoHistory();
+    applyVideoFilters();
+    showNotification(`✨ ${filterName.toUpperCase()} filter applied!`);
+}
+
+// ==================== VIDEO EFFECTS ====================
+
+function applyVideoEffect(effectName) {
+    if (!videoPreview.src) return showNotification('🎥 Upload a video first!');
+
+    switch(effectName) {
+        case 'blur':
+            videoAdjustments.brightness = 100;
+            videoAdjustments.contrast = 100;
+            break;
+        case 'glow':
+            videoAdjustments.brightness = 120;
+            videoAdjustments.saturation = 120;
+            break;
+        case 'fade':
+            videoAdjustments.contrast = 70;
+            videoAdjustments.saturation = 50;
+            break;
+    }
+
+    activeVideoFilters[effectName] = true;
+    updateAllVideoSliders();
+    saveVideoHistory();
+    applyVideoFilters();
+    showNotification(`✨ ${effectName.toUpperCase()} effect applied!`);
+}
+
+// ==================== VIDEO TOOLS ====================
+
+function activateVideoTool(tool) {
+    if (!videoPreview.src) return showNotification('🎥 Upload a video first!');
+
+    switch(tool) {
+        case 'trim':
+            document.getElementById('trimControls').style.display = 'block';
+            showNotification('✂️ Trim tool activated - Mark start and end points');
+            break;
+        case 'crop':
+            showNotification('🔲 Crop tool activated - Resize video dimensions');
+            break;
+        case 'reverse':
+            showNotification('⏮️ Reverse effect activated');
+            saveVideoHistory();
+            break;
+        case 'freeze':
+            videoPreview.pause();
+            showNotification('⏸️ Frame frozen!');
+            break;
+        case 'extractAudio':
+            showNotification('📤 Audio extraction - Right-click on video > Save audio as');
+            break;
+        case 'muteAudio':
+            videoPreview.volume = 0;
+            videoAdjustments.volume = 0;
+            document.getElementById('volume').value = 0;
+            showNotification('🔇 Video muted!');
+            break;
+    }
+}
+
+// ==================== TRIM FUNCTIONALITY ====================
+
+function setTrimStart() {
+    trimStart = videoPreview.currentTime;
+    updateTrimInfo();
+    showNotification(`⏹️ Trim start: ${formatTime(trimStart)}`);
+    saveVideoHistory();
+}
+
+function setTrimEnd() {
+    trimEnd = videoPreview.currentTime;
+    update
