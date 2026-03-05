@@ -1,390 +1,22 @@
-// Photo Editor Script - Full Manual Control
+// ==================== PAGE NAVIGATION ====================
 
-let photoImage = null;
-let photoContext = null;
-let photoCanvas = document.getElementById('photoCanvas');
-let photoInput = document.getElementById('photoInput');
-let uploadArea = document.getElementById('uploadArea');
-
-let photoAdjustments = {
-    brightness: 100,
-    contrast: 100,
-    saturation: 100,
-    hue: 0,
-    exposure: 0,
-    sharpness: 0,
-    opacity: 100
-};
-
-let activePhotoFilters = {};
-let photoActionHistory = [];
-
-// ==================== UPLOAD FUNCTIONALITY ====================
-
-uploadArea.addEventListener('click', () => photoInput.click());
-
-uploadArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadArea.style.borderColor = '#764ba2';
-});
-
-uploadArea.addEventListener('dragleave', () => {
-    uploadArea.style.borderColor = '#667eea';
-});
-
-uploadArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-        loadPhoto(file);
-    }
-});
-
-photoInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) loadPhoto(file);
-});
-
-function loadPhoto(file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-            photoImage = img;
-            setupPhotoCanvas();
-            renderPhoto();
-            uploadArea.style.display = 'none';
-            photoCanvas.style.display = 'block';
-            showNotification('✅ Photo loaded successfully!');
-        };
-        img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
+function showHome() {
+    document.getElementById('home-section').classList.add('show');
+    document.getElementById('photo-section').classList.remove('show');
+    document.getElementById('video-section').classList.remove('show');
 }
 
-function setupPhotoCanvas() {
-    const maxWidth = 600;
-    if (photoImage.width > maxWidth) {
-        photoCanvas.width = maxWidth;
-        photoCanvas.height = (photoImage.height / photoImage.width) * maxWidth;
-    } else {
-        photoCanvas.width = photoImage.width;
-        photoCanvas.height = photoImage.height;
-    }
-    photoContext = photoCanvas.getContext('2d');
+function showPhotoEditor() {
+    document.getElementById('home-section').classList.remove('show');
+    document.getElementById('photo-section').classList.add('show');
+    document.getElementById('video-section').classList.remove('show');
 }
 
-// ==================== PHOTO RENDERING ====================
-
-function renderPhoto() {
-    if (!photoImage || !photoContext) return;
-
-    photoContext.clearRect(0, 0, photoCanvas.width, photoCanvas.height);
-    
-    const { brightness, contrast, saturation, hue, exposure, opacity } = photoAdjustments;
-    const sharpnessValue = photoAdjustments.sharpness;
-
-    photoContext.filter = `
-        brightness(${brightness}%)
-        contrast(${contrast}%)
-        saturate(${saturation}%)
-        hue-rotate(${hue}deg)
-        opacity(${opacity}%)
-    `;
-
-    photoContext.globalAlpha = opacity / 100;
-    photoContext.drawImage(photoImage, 0, 0, photoCanvas.width, photoCanvas.height);
-    photoContext.globalAlpha = 1;
-
-    updateEffectsList();
+function showVideoEditor() {
+    document.getElementById('home-section').classList.remove('show');
+    document.getElementById('photo-section').classList.remove('show');
+    document.getElementById('video-section').classList.add('show');
 }
-
-// ==================== MANUAL ADJUSTMENTS ====================
-
-function updatePhotoAdjustment(type) {
-    const value = document.getElementById(type).value;
-    
-    photoAdjustments[type] = parseInt(value);
-    
-    // Update display
-    const displayId = type + 'Display';
-    const displayElement = document.getElementById(displayId);
-    if (displayElement) {
-        if (type === 'hue') {
-            displayElement.textContent = value + '°';
-        } else if (type === 'opacity' || type === 'brightness' || type === 'contrast' || type === 'saturation') {
-            displayElement.textContent = value + '%';
-        } else if (type === 'exposure' || type === 'sharpness') {
-            displayElement.textContent = value;
-        } else {
-            displayElement.textContent = value + '%';
-        }
-    }
-
-    saveHistory();
-    renderPhoto();
-}
-
-// ==================== FILTERS ====================
-
-function applyPhotoFilter(filterName) {
-    if (!photoImage) return showNotification('📷 Upload a photo first!');
-
-    if (filterName === 'original') {
-        activePhotoFilters = {};
-        photoAdjustments = {
-            brightness: 100,
-            contrast: 100,
-            saturation: 100,
-            hue: 0,
-            exposure: 0,
-            sharpness: 0,
-            opacity: 100
-        };
-        resetAllSliders();
-        renderPhoto();
-        showNotification('✨ Original filter applied!');
-        return;
-    }
-
-    activePhotoFilters[filterName] = true;
-
-    switch(filterName) {
-        case 'grayscale':
-            photoAdjustments.saturation = 0;
-            break;
-        case 'sepia':
-            photoAdjustments.saturation = 50;
-            photoAdjustments.hue = 30;
-            break;
-        case 'vintage':
-            photoAdjustments.saturation = 150;
-            photoAdjustments.hue = 20;
-            photoAdjustments.brightness = 110;
-            break;
-        case 'cool':
-            photoAdjustments.hue = 180;
-            photoAdjustments.saturation = 120;
-            photoAdjustments.brightness = 95;
-            break;
-        case 'warm':
-            photoAdjustments.hue = 20;
-            photoAdjustments.saturation = 120;
-            photoAdjustments.brightness = 110;
-            break;
-        case 'invert':
-            // Inverted colors
-            photoContext.clearRect(0, 0, photoCanvas.width, photoCanvas.height);
-            photoContext.globalAlpha = photoAdjustments.opacity / 100;
-            const imageData = photoContext.getImageData(0, 0, photoCanvas.width, photoCanvas.height);
-            const data = imageData.data;
-            for (let i = 0; i < data.length; i += 4) {
-                data[i] = 255 - data[i];
-                data[i + 1] = 255 - data[i + 1];
-                data[i + 2] = 255 - data[i + 2];
-            }
-            photoContext.drawImage(photoImage, 0, 0, photoCanvas.width, photoCanvas.height);
-            photoContext.putImageData(imageData, 0, 0);
-            showNotification(`✨ ${filterName} filter applied!`);
-            saveHistory();
-            updateEffectsList();
-            return;
-        case 'blur':
-            photoContext.filter = `blur(8px) brightness(${photoAdjustments.brightness}%) contrast(${photoAdjustments.contrast}%)`;
-            break;
-    }
-
-    updateAllSliders();
-    saveHistory();
-    renderPhoto();
-    showNotification(`✨ ${filterName.toUpperCase()} filter applied!`);
-}
-
-// ==================== EFFECTS ====================
-
-function applyPhotoEffect(effectName) {
-    if (!photoImage) return showNotification('📷 Upload a photo first!');
-
-    switch(effectName) {
-        case 'glow':
-            photoAdjustments.brightness = 120;
-            photoAdjustments.saturation = 120;
-            break;
-        case 'vignette':
-            photoAdjustments.brightness = 85;
-            photoAdjustments.saturation = 110;
-            break;
-        case 'fade':
-            photoAdjustments.contrast = 70;
-            photoAdjustments.saturation = 50;
-            break;
-        case 'shadow':
-            photoAdjustments.brightness = 60;
-            photoAdjustments.contrast = 130;
-            break;
-    }
-
-    activePhotoFilters[effectName] = true;
-    updateAllSliders();
-    saveHistory();
-    renderPhoto();
-    showNotification(`✨ ${effectName.toUpperCase()} effect applied!`);
-}
-
-// ==================== TOOLS ====================
-
-function activatePhotoTool(tool) {
-    if (!photoImage) return showNotification('📷 Upload a photo first!');
-
-    switch(tool) {
-        case 'crop':
-            showNotification('🔲 Crop tool activated - Resize the canvas to crop');
-            break;
-        case 'rotate':
-            rotatePhotoImage();
-            break;
-        case 'flip':
-            flipPhotoImage();
-            break;
-        case 'resize':
-            const width = prompt('Enter width in pixels:', photoCanvas.width);
-            if (width) {
-                photoCanvas.width = parseInt(width);
-                photoCanvas.height = (photoImage.height / photoImage.width) * photoCanvas.width;
-                renderPhoto();
-                showNotification('📏 Photo resized!');
-                saveHistory();
-            }
-            break;
-    }
-}
-
-function rotatePhotoImage() {
-    const temp = photoCanvas.width;
-    photoCanvas.width = photoCanvas.height;
-    photoCanvas.height = temp;
-    
-    photoContext.save();
-    photoContext.translate(photoCanvas.width / 2, photoCanvas.height / 2);
-    photoContext.rotate(Math.PI / 2);
-    photoContext.translate(-photoCanvas.height / 2, -photoCanvas.width / 2);
-    renderPhoto();
-    photoContext.restore();
-    
-    saveHistory();
-    showNotification('🔄 Photo rotated 90°!');
-}
-
-function flipPhotoImage() {
-    photoContext.save();
-    photoContext.scale(-1, 1);
-    photoContext.translate(-photoCanvas.width, 0);
-    renderPhoto();
-    photoContext.restore();
-    
-    saveHistory();
-    showNotification('↔️ Photo flipped!');
-}
-
-// ==================== HELPER FUNCTIONS ====================
-
-function updateAllSliders() {
-    document.getElementById('brightness').value = photoAdjustments.brightness;
-    document.getElementById('contrast').value = photoAdjustments.contrast;
-    document.getElementById('saturation').value = photoAdjustments.saturation;
-    document.getElementById('hue').value = photoAdjustments.hue;
-    document.getElementById('exposure').value = photoAdjustments.exposure;
-    document.getElementById('sharpness').value = photoAdjustments.sharpness;
-    document.getElementById('opacity').value = photoAdjustments.opacity;
-
-    document.getElementById('brightnessDisplay').textContent = photoAdjustments.brightness + '%';
-    document.getElementById('contrastDisplay').textContent = photoAdjustments.contrast + '%';
-    document.getElementById('saturationDisplay').textContent = photoAdjustments.saturation + '%';
-    document.getElementById('hueDisplay').textContent = photoAdjustments.hue + '°';
-    document.getElementById('exposureDisplay').textContent = photoAdjustments.exposure;
-    document.getElementById('sharpnessDisplay').textContent = photoAdjustments.sharpness;
-    document.getElementById('opacityDisplay').textContent = photoAdjustments.opacity + '%';
-}
-
-function resetAllSliders() {
-    document.getElementById('brightness').value = 100;
-    document.getElementById('contrast').value = 100;
-    document.getElementById('saturation').value = 100;
-    document.getElementById('hue').value = 0;
-    document.getElementById('exposure').value = 0;
-    document.getElementById('sharpness').value = 0;
-    document.getElementById('opacity').value = 100;
-    updateAllSliders();
-}
-
-function updateEffectsList() {
-    const effectsList = document.getElementById('effectsList');
-    effectsList.innerHTML = '';
-    
-    const activeEffects = [];
-    if (photoAdjustments.brightness !== 100) activeEffects.push(`Brightness: ${photoAdjustments.brightness}%`);
-    if (photoAdjustments.contrast !== 100) activeEffects.push(`Contrast: ${photoAdjustments.contrast}%`);
-    if (photoAdjustments.saturation !== 100) activeEffects.push(`Saturation: ${photoAdjustments.saturation}%`);
-    if (photoAdjustments.hue !== 0) activeEffects.push(`Hue: ${photoAdjustments.hue}°`);
-    if (photoAdjustments.opacity !== 100) activeEffects.push(`Opacity: ${photoAdjustments.opacity}%`);
-
-    Object.keys(activePhotoFilters).forEach(filter => {
-        activeEffects.push(`📌 ${filter}`);
-    });
-
-    activeEffects.forEach(effect => {
-        const badge = document.createElement('div');
-        badge.className = 'effect-badge';
-        badge.textContent = effect;
-        effectsList.appendChild(badge);
-    });
-}
-
-// ==================== HISTORY & UNDO ====================
-
-function saveHistory() {
-    photoActionHistory.push(JSON.parse(JSON.stringify(photoAdjustments)));
-    if (photoActionHistory.length > 10) photoActionHistory.shift();
-}
-
-function undoPhotoAction() {
-    if (photoActionHistory.length === 0) return showNotification('Nothing to undo!');
-    photoAdjustments = JSON.parse(JSON.stringify(photoActionHistory.pop()));
-    updateAllSliders();
-    renderPhoto();
-    showNotification('↶ Action undone!');
-}
-
-// ==================== DOWNLOAD & RESET ====================
-
-function downloadPhoto() {
-    if (!photoImage) return showNotification('📷 Upload a photo first!');
-    
-    const link = document.createElement('a');
-    link.href = photoCanvas.toDataURL('image/png');
-    link.download = `photo-${Date.now()}.png`;
-    link.click();
-    showNotification('⬇️ Photo downloaded!');
-}
-
-function resetAllPhoto() {
-    photoAdjustments = {
-        brightness: 100,
-        contrast: 100,
-        saturation: 100,
-        hue: 0,
-        exposure: 0,
-        sharpness: 0,
-        opacity: 100
-    };
-    activePhotoFilters = {};
-    photoActionHistory = [];
-    resetAllSliders();
-    renderPhoto();
-    showNotification('🔄 All adjustments reset!');
-}
-
-// ==================== NOTIFICATIONS ====================
 
 function showNotification(msg) {
     const notification = document.getElementById('notification');
@@ -392,274 +24,574 @@ function showNotification(msg) {
     notification.classList.add('show');
     setTimeout(() => notification.classList.remove('show'), 3000);
 }
-// Video Editor Script - Full Manual Control
+
+// ==================== PHOTO EDITOR ====================
+
+let photoImage = null;
+let photoContext = null;
+let photoCanvas = document.getElementById('photoCanvas');
+let photoInput = document.getElementById('photoInput');
+let photoUploadArea = document.getElementById('photoUploadArea');
+
+let photoState = {
+    brightness: 100,
+    contrast: 100,
+    saturation: 100,
+    hue: 0,
+    exposure: 0,
+    sharpness: 0,
+    opacity: 100,
+    currentFilter: 'original'
+};
+
+// Photo Upload
+photoUploadArea.addEventListener('click', () => photoInput.click());
+photoUploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    photoUploadArea.style.borderColor = '#764ba2';
+});
+photoUploadArea.addEventListener('dragleave', () => {
+    photoUploadArea.style.borderColor = '#667eea';
+});
+photoUploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (e.dataTransfer.files[0]) loadPhotoFile(e.dataTransfer.files[0]);
+});
+
+photoInput.addEventListener('change', (e) => {
+    if (e.target.files[0]) loadPhotoFile(e.target.files[0]);
+});
+
+function loadPhotoFile(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+            photoImage = img;
+            const maxWidth = 600;
+            photoCanvas.width = Math.min(img.width, maxWidth);
+            photoCanvas.height = (img.height / img.width) * photoCanvas.width;
+            photoContext = photoCanvas.getContext('2d');
+            photoUploadArea.style.display = 'none';
+            photoCanvas.style.display = 'block';
+            renderPhoto();
+            showNotification('✅ Photo loaded!');
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function renderPhoto() {
+    if (!photoImage || !photoContext) return;
+    photoContext.clearRect(0, 0, photoCanvas.width, photoCanvas.height);
+    photoContext.filter = `
+        brightness(${photoState.brightness}%)
+        contrast(${photoState.contrast}%)
+        saturate(${photoState.saturation}%)
+        hue-rotate(${photoState.hue}deg)
+    `;
+    photoContext.globalAlpha = photoState.opacity / 100;
+    photoContext.drawImage(photoImage, 0, 0, photoCanvas.width, photoCanvas.height);
+    photoContext.globalAlpha = 1;
+    updatePhotoEffectsList();
+}
+
+function updatePhotoAdjustment(type) {
+    const value = document.getElementById('photo' + type.charAt(0).toUpperCase() + type.slice(1)).value;
+    photoState[type] = parseInt(value);
+    
+    const displayMap = {
+        brightness: 'photoBrightnessValue',
+        contrast: 'photoContrastValue',
+        saturation: 'photoSaturationValue',
+        hue: 'photoHueValue',
+        exposure: 'photoExposureValue',
+        sharpness: 'photoSharpnessValue',
+        opacity: 'photoOpacityValue'
+    };
+    
+    const display = document.getElementById(displayMap[type]);
+    if (display) {
+        if (type === 'hue') display.textContent = value + '°';
+        else if (type === 'exposure' || type === 'sharpness') display.textContent = value;
+        else display.textContent = value + '%';
+    }
+    
+    renderPhoto();
+}
+
+function applyPhotoFilter(name) {
+    if (!photoImage) return showNotification('📷 Upload a photo first!');
+    
+    photoState.currentFilter = name;
+    
+    if (name === 'original') {
+        photoState = { brightness: 100, contrast: 100, saturation: 100, hue: 0, exposure: 0, sharpness: 0, opacity: 100, currentFilter: 'original' };
+        resetPhotoSliders();
+    } else if (name === 'grayscale') {
+        photoState.saturation = 0;
+    } else if (name === 'sepia') {
+        photoState.saturation = 50;
+        photoState.hue = 30;
+    } else if (name === 'vintage') {
+        photoState.saturation = 150;
+        photoState.hue = 20;
+        photoState.brightness = 110;
+    } else if (name === 'cool') {
+        photoState.hue = 180;
+        photoState.saturation = 120;
+    } else if (name === 'warm') {
+        photoState.hue = 20;
+        photoState.saturation = 120;
+        photoState.brightness = 110;
+    } else if (name === 'invert') {
+        photoState.brightness = 100;
+        photoState.contrast = 150;
+    }
+    
+    updatePhotoSliders();
+    renderPhoto();
+    showNotification('✨ ' + name.toUpperCase() + ' filter applied!');
+}
+
+function applyPhotoEffect(name) {
+    if (!photoImage) return showNotification('📷 Upload a photo first!');
+    
+    if (name === 'glow') {
+        photoState.brightness = 120;
+        photoState.saturation = 120;
+    } else if (name === 'vignette') {
+        photoState.brightness = 85;
+        photoState.saturation = 110;
+    } else if (name === 'fade') {
+        photoState.contrast = 70;
+        photoState.saturation = 50;
+    }
+    
+    updatePhotoSliders();
+    renderPhoto();
+    showNotification('✨ ' + name + ' effect applied!');
+}
+
+function rotatePhoto90() {
+    if (!photoImage) return showNotification('📷 Upload a photo first!');
+    const temp = photoCanvas.width;
+    photoCanvas.width = photoCanvas.height;
+    photoCanvas.height = temp;
+    photoContext = photoCanvas.getContext('2d');
+    photoContext.translate(photoCanvas.width / 2, photoCanvas.height / 2);
+    photoContext.rotate(Math.PI / 2);
+    photoContext.translate(-photoCanvas.height / 2, -photoCanvas.width / 2);
+    renderPhoto();
+    showNotification('🔄 Rotated 90°!');
+}
+
+function flipPhotoHorizontal() {
+    if (!photoImage) return showNotification('📷 Upload a photo first!');
+    photoContext.save();
+    photoContext.scale(-1, 1);
+    photoContext.translate(-photoCanvas.width, 0);
+    renderPhoto();
+    photoContext.restore();
+    showNotification('↔️ Flipped horizontally!');
+}
+
+function flipPhotoVertical() {
+    if (!photoImage) return showNotification('📷 Upload a photo first!');
+    photoContext.save();
+    photoContext.scale(1, -1);
+    photoContext.translate(0, -photoCanvas.height);
+    renderPhoto();
+    photoContext.restore();
+    showNotification('↕️ Flipped vertically!');
+}
+
+function resizePhotoDialog() {
+    if (!photoImage) return showNotification('📷 Upload a photo first!');
+    const width = prompt('Enter new width:', photoCanvas.width);
+    if (width) {
+        photoCanvas.width = parseInt(width);
+        photoCanvas.height = (photoImage.height / photoImage.width) * photoCanvas.width;
+        renderPhoto();
+        showNotification('📏 Resized!');
+    }
+}
+
+function downloadPhoto() {
+    if (!photoImage) return showNotification('📷 Upload a photo first!');
+    const link = document.createElement('a');
+    link.href = photoCanvas.toDataURL('image/png');
+    link.download = `photo-${Date.now()}.png`;
+    link.click();
+    showNotification('⬇️ Downloaded!');
+}
+
+function resetAllPhoto() {
+    if (!photoImage) return;
+    photoState = { brightness: 100, contrast: 100, saturation: 100, hue: 0, exposure: 0, sharpness: 0, opacity: 100, currentFilter: 'original' };
+    resetPhotoSliders();
+    renderPhoto();
+    showNotification('🔄 Reset all!');
+}
+
+function updatePhotoSliders() {
+    document.getElementById('photoBrightness').value = photoState.brightness;
+    document.getElementById('photoContrast').value = photoState.contrast;
+    document.getElementById('photoSaturation').value = photoState.saturation;
+    document.getElementById('photoHue').value = photoState.hue;
+    document.getElementById('photoExposure').value = photoState.exposure;
+    document.getElementById('photoSharpness').value = photoState.sharpness;
+    document.getElementById('photoOpacity').value = photoState.opacity;
+    
+    document.getElementById('photoBrightnessValue').textContent = photoState.brightness + '%';
+    document.getElementById('photoContrastValue').textContent = photoState.contrast + '%';
+    document.getElementById('photoSaturationValue').textContent = photoState.saturation + '%';
+    document.getElementById('photoHueValue').textContent = photoState.hue + '°';
+    document.getElementById('photoExposureValue').textContent = photoState.exposure;
+    document.getElementById('photoSharpnessValue').textContent = photoState.sharpness;
+    document.getElementById('photoOpacityValue').textContent = photoState.opacity + '%';
+}
+
+function resetPhotoSliders() {
+    document.getElementById('photoBrightness').value = 100;
+    document.getElementById('photoContrast').value = 100;
+    document.getElementById('photoSaturation').value = 100;
+    document.getElementById('photoHue').value = 0;
+    document.getElementById('photoExposure').value = 0;
+    document.getElementById('photoSharpness').value = 0;
+    document.getElementById('photoOpacity').value = 100;
+    updatePhotoSliders();
+}
+
+function updatePhotoEffectsList() {
+    const list = document.getElementById('photoEffectsList');
+    list.innerHTML = '';
+    const effects = [];
+    if (photoState.brightness !== 100) effects.push(`Brightness: ${photoState.brightness}%`);
+    if (photoState.contrast !== 100) effects.push(`Contrast: ${photoState.contrast}%`);
+    if (photoState.saturation !== 100) effects.push(`Saturation: ${photoState.saturation}%`);
+    if (photoState.hue !== 0) effects.push(`Hue: ${photoState.hue}°`);
+    if (photoState.opacity !== 100) effects.push(`Opacity: ${photoState.opacity}%`);
+    if (photoState.currentFilter !== 'original') effects.push(`📌 ${photoState.currentFilter}`);
+    
+    effects.forEach(e => {
+        const badge = document.createElement('div');
+        badge.className = 'effect-badge';
+        badge.textContent = e;
+        list.appendChild(badge);
+    });
+}
+
+// ==================== VIDEO EDITOR ====================
 
 let videoPreview = document.getElementById('videoPreview');
 let videoInput = document.getElementById('videoInput');
-let uploadArea = document.getElementById('uploadArea');
+let videoUploadArea = document.getElementById('videoUploadArea');
 
-let videoAdjustments = {
+let videoState = {
     brightness: 100,
     contrast: 100,
     saturation: 100,
     hue: 0,
     volume: 100,
     speed: 1,
-    opacity: 100
+    opacity: 100,
+    currentFilter: 'original'
 };
 
-let activeVideoFilters = {};
-let videoActionHistory = [];
 let trimStart = null;
 let trimEnd = null;
 
-// ==================== UPLOAD FUNCTIONALITY ====================
-
-uploadArea.addEventListener('click', () => videoInput.click());
-
-uploadArea.addEventListener('dragover', (e) => {
+// Video Upload
+videoUploadArea.addEventListener('click', () => videoInput.click());
+videoUploadArea.addEventListener('dragover', (e) => {
     e.preventDefault();
-    uploadArea.style.borderColor = '#764ba2';
+    videoUploadArea.style.borderColor = '#764ba2';
 });
-
-uploadArea.addEventListener('dragleave', () => {
-    uploadArea.style.borderColor = '#667eea';
+videoUploadArea.addEventListener('dragleave', () => {
+    videoUploadArea.style.borderColor = '#667eea';
 });
-
-uploadArea.addEventListener('drop', (e) => {
+videoUploadArea.addEventListener('drop', (e) => {
     e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('video/')) {
-        loadVideo(file);
-    }
+    if (e.dataTransfer.files[0]) loadVideoFile(e.dataTransfer.files[0]);
 });
 
 videoInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) loadVideo(file);
+    if (e.target.files[0]) loadVideoFile(e.target.files[0]);
 });
 
-function loadVideo(file) {
+function loadVideoFile(file) {
     const url = URL.createObjectURL(file);
     videoPreview.src = url;
-    uploadArea.style.display = 'none';
+    videoUploadArea.style.display = 'none';
     videoPreview.style.display = 'block';
     document.getElementById('timelineSection').style.display = 'block';
-    document.getElementById('playbackControls').style.display = 'flex';
-    document.getElementById('trimControls').style.display = 'block';
-    showNotification('✅ Video loaded successfully!');
+    document.getElementById('videoPlaybackControls').style.display = 'flex';
+    showNotification('✅ Video loaded!');
 }
 
-// ==================== VIDEO PLAYBACK ====================
-
 videoPreview.addEventListener('loadedmetadata', () => {
-    document.getElementById('videoTimeline').max = Math.floor(videoPreview.duration);
-    updateTimeDisplay();
+    document.getElementById('videoTimeline').max = videoPreview.duration;
+    updateVideoTimeDisplay();
 });
 
 videoPreview.addEventListener('timeupdate', () => {
-    document.getElementById('videoTimeline').value = Math.floor(videoPreview.currentTime);
-    updateTimeDisplay();
+    document.getElementById('videoTimeline').value = videoPreview.currentTime;
+    updateVideoTimeDisplay();
 });
 
-function updateTimeDisplay() {
+function updateVideoTimeDisplay() {
     const current = formatTime(videoPreview.currentTime);
     const duration = formatTime(videoPreview.duration);
     document.getElementById('currentTimeDisplay').textContent = current;
     document.getElementById('durationDisplay').textContent = duration;
 }
 
-function formatTime(seconds) {
-    if (isNaN(seconds)) return '0:00';
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+function formatTime(s) {
+    if (isNaN(s)) return '0:00';
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, '0')}`;
 }
 
 function seekVideo() {
     videoPreview.currentTime = document.getElementById('videoTimeline').value;
 }
 
-function togglePlayVideo() {
-    const btn = document.getElementById('playBtn');
+function toggleVideoPlay() {
     if (videoPreview.paused) {
         videoPreview.play();
-        btn.textContent = '⏸️ Pause';
+        document.getElementById('videoPlayBtn').textContent = '⏸️ Pause';
     } else {
         videoPreview.pause();
-        btn.textContent = '▶️ Play';
+        document.getElementById('videoPlayBtn').textContent = '▶️ Play';
     }
+}
+
+function pauseVideo() {
+    videoPreview.pause();
 }
 
 function stopVideo() {
     videoPreview.pause();
     videoPreview.currentTime = 0;
-    document.getElementById('playBtn').textContent = '▶️ Play';
+    document.getElementById('videoPlayBtn').textContent = '▶️ Play';
 }
 
-// ==================== MANUAL VIDEO ADJUSTMENTS ====================
-
 function updateVideoAdjustment(type) {
-    const value = document.getElementById(type).value;
+    const value = document.getElementById('video' + type.charAt(0).toUpperCase() + type.slice(1)).value;
+    videoState[type] = parseFloat(value);
     
-    videoAdjustments[type] = parseFloat(value);
+    const displayMap = {
+        brightness: 'videoBrightnessValue',
+        contrast: 'videoContrastValue',
+        saturation: 'videoSaturationValue',
+        hue: 'videoHueValue',
+        volume: 'videoVolumeValue',
+        speed: 'videoSpeedValue',
+        opacity: 'videoOpacityValue'
+    };
     
-    // Update display
-    const displayId = type + 'Display';
-    const displayElement = document.getElementById(displayId);
-    if (displayElement) {
-        if (type === 'speed') {
-            displayElement.textContent = value + 'x';
-            videoPreview.playbackRate = parseFloat(value);
-        } else if (type === 'volume') {
-            displayElement.textContent = value + '%';
-            videoPreview.volume = parseFloat(value) / 100;
-        } else if (type === 'brightness' || type === 'contrast' || type === 'saturation' || type === 'opacity') {
-            displayElement.textContent = value + '%';
-        } else if (type === 'hue') {
-            displayElement.textContent = value + '°';
-        }
+    const display = document.getElementById(displayMap[type]);
+    if (display) {
+        if (type === 'speed') display.textContent = value + 'x';
+        else if (type === 'hue') display.textContent = value + '°';
+        else display.textContent = value + '%';
     }
-
+    
+    if (type === 'volume') videoPreview.volume = value / 100;
+    if (type === 'speed') videoPreview.playbackRate = value;
+    
     applyVideoFilters();
-    saveVideoHistory();
 }
 
 function applyVideoFilters() {
-    const { brightness, contrast, saturation, hue, opacity } = videoAdjustments;
     videoPreview.style.filter = `
-        brightness(${brightness}%)
-        contrast(${contrast}%)
-        saturate(${saturation}%)
-        hue-rotate(${hue}deg)
+        brightness(${videoState.brightness}%)
+        contrast(${videoState.contrast}%)
+        saturate(${videoState.saturation}%)
+        hue-rotate(${videoState.hue}deg)
     `;
-    videoPreview.style.opacity = opacity / 100;
-    updateEffectsList();
+    videoPreview.style.opacity = videoState.opacity / 100;
+    updateVideoEffectsList();
 }
 
-// ==================== VIDEO FILTERS ====================
-
-function applyVideoFilter(filterName) {
+function applyVideoFilter(name) {
     if (!videoPreview.src) return showNotification('🎥 Upload a video first!');
-
-    if (filterName === 'original') {
-        activeVideoFilters = {};
-        videoAdjustments = {
-            brightness: 100,
-            contrast: 100,
-            saturation: 100,
-            hue: 0,
-            volume: 100,
-            speed: 1,
-            opacity: 100
-        };
-        resetAllVideoSliders();
-        applyVideoFilters();
-        showNotification('✨ Original filter applied!');
-        return;
+    
+    videoState.currentFilter = name;
+    
+    if (name === 'original') {
+        videoState = { brightness: 100, contrast: 100, saturation: 100, hue: 0, volume: 100, speed: 1, opacity: 100, currentFilter: 'original' };
+        resetVideoSliders();
+    } else if (name === 'grayscale') {
+        videoState.saturation = 0;
+    } else if (name === 'sepia') {
+        videoState.saturation = 50;
+        videoState.hue = 30;
+    } else if (name === 'cool') {
+        videoState.hue = 180;
+        videoState.saturation = 120;
+    } else if (name === 'warm') {
+        videoState.hue = 20;
+        videoState.saturation = 120;
+        videoState.brightness = 110;
+    } else if (name === 'invert') {
+        videoState.contrast = 150;
     }
-
-    activeVideoFilters[filterName] = true;
-
-    switch(filterName) {
-        case 'grayscale':
-            videoAdjustments.saturation = 0;
-            break;
-        case 'sepia':
-            videoAdjustments.saturation = 50;
-            videoAdjustments.hue = 30;
-            break;
-        case 'cool':
-            videoAdjustments.hue = 180;
-            videoAdjustments.saturation = 120;
-            videoAdjustments.brightness = 95;
-            break;
-        case 'warm':
-            videoAdjustments.hue = 20;
-            videoAdjustments.saturation = 120;
-            videoAdjustments.brightness = 110;
-            break;
-        case 'invert':
-            videoAdjustments.brightness = 100;
-            videoAdjustments.contrast = 100;
-            break;
-    }
-
-    updateAllVideoSliders();
-    saveVideoHistory();
+    
+    updateVideoSliders();
     applyVideoFilters();
-    showNotification(`✨ ${filterName.toUpperCase()} filter applied!`);
+    showNotification('✨ ' + name.toUpperCase() + ' filter applied!');
 }
 
-// ==================== VIDEO EFFECTS ====================
-
-function applyVideoEffect(effectName) {
+function applyVideoEffect(name) {
     if (!videoPreview.src) return showNotification('🎥 Upload a video first!');
-
-    switch(effectName) {
-        case 'blur':
-            videoAdjustments.brightness = 100;
-            videoAdjustments.contrast = 100;
-            break;
-        case 'glow':
-            videoAdjustments.brightness = 120;
-            videoAdjustments.saturation = 120;
-            break;
-        case 'fade':
-            videoAdjustments.contrast = 70;
-            videoAdjustments.saturation = 50;
-            break;
+    
+    if (name === 'blur') {
+        videoState.brightness = 95;
+    } else if (name === 'glow') {
+        videoState.brightness = 120;
+        videoState.saturation = 120;
+    } else if (name === 'fade') {
+        videoState.contrast = 70;
+        videoState.saturation = 50;
     }
-
-    activeVideoFilters[effectName] = true;
-    updateAllVideoSliders();
-    saveVideoHistory();
+    
+    updateVideoSliders();
     applyVideoFilters();
-    showNotification(`✨ ${effectName.toUpperCase()} effect applied!`);
+    showNotification('✨ ' + name + ' effect applied!');
 }
 
-// ==================== VIDEO TOOLS ====================
-
-function activateVideoTool(tool) {
+function activateVideoTrim() {
     if (!videoPreview.src) return showNotification('🎥 Upload a video first!');
-
-    switch(tool) {
-        case 'trim':
-            document.getElementById('trimControls').style.display = 'block';
-            showNotification('✂️ Trim tool activated - Mark start and end points');
-            break;
-        case 'crop':
-            showNotification('🔲 Crop tool activated - Resize video dimensions');
-            break;
-        case 'reverse':
-            showNotification('⏮️ Reverse effect activated');
-            saveVideoHistory();
-            break;
-        case 'freeze':
-            videoPreview.pause();
-            showNotification('⏸️ Frame frozen!');
-            break;
-        case 'extractAudio':
-            showNotification('📤 Audio extraction - Right-click on video > Save audio as');
-            break;
-        case 'muteAudio':
-            videoPreview.volume = 0;
-            videoAdjustments.volume = 0;
-            document.getElementById('volume').value = 0;
-            showNotification('🔇 Video muted!');
-            break;
-    }
+    document.getElementById('videoTrimControls').style.display = 'block';
+    showNotification('✂️ Trim mode activated!');
 }
 
-// ==================== TRIM FUNCTIONALITY ====================
+function reverseVideo() {
+    if (!videoPreview.src) return showNotification('🎥 Upload a video first!');
+    showNotification('⏮️ Reverse effect (requires server-side processing)');
+}
+
+function freezeFrame() {
+    if (!videoPreview.src) return showNotification('🎥 Upload a video first!');
+    videoPreview.pause();
+    showNotification('⏸️ Frame frozen!');
+}
+
+function muteVideo() {
+    videoPreview.volume = 0;
+    videoState.volume = 0;
+    document.getElementById('videoVolume').value = 0;
+    document.getElementById('videoVolumeValue').textContent = '0%';
+    showNotification('🔇 Muted!');
+}
+
+function unmuteVideo() {
+    videoPreview.volume = 1;
+    videoState.volume = 100;
+    document.getElementById('videoVolume').value = 100;
+    document.getElementById('videoVolumeValue').textContent = '100%';
+    showNotification('🔊 Unmuted!');
+}
 
 function setTrimStart() {
     trimStart = videoPreview.currentTime;
     updateTrimInfo();
-    showNotification(`⏹️ Trim start: ${formatTime(trimStart)}`);
-    saveVideoHistory();
+    showNotification('⏹️ Trim start: ' + formatTime(trimStart));
 }
 
 function setTrimEnd() {
     trimEnd = videoPreview.currentTime;
-    update
+    updateTrimInfo();
+    showNotification('⏹️ Trim end: ' + formatTime(trimEnd));
+}
+
+function resetTrim() {
+    trimStart = null;
+    trimEnd = null;
+    updateTrimInfo();
+    showNotification('🔄 Trim reset!');
+}
+
+function updateTrimInfo() {
+    const info = document.getElementById('trimInfo');
+    if (trimStart === null || trimEnd === null) {
+        info.textContent = 'No trim set';
+    } else {
+        info.textContent = `✂️ Trim: ${formatTime(trimStart)} - ${formatTime(trimEnd)}`;
+    }
+}
+
+function downloadVideo() {
+    if (!videoPreview.src) return showNotification('🎥 Upload a video first!');
+    const link = document.createElement('a');
+    link.href = videoPreview.src;
+    link.download = `video-${Date.now()}.mp4`;
+    link.click();
+    showNotification('⬇️ Downloaded!');
+}
+
+function resetAllVideo() {
+    if (!videoPreview.src) return;
+    videoState = { brightness: 100, contrast: 100, saturation: 100, hue: 0, volume: 100, speed: 1, opacity: 100, currentFilter: 'original' };
+    resetVideoSliders();
+    videoPreview.volume = 1;
+    videoPreview.playbackRate = 1;
+    applyVideoFilters();
+    showNotification('🔄 Reset all!');
+}
+
+function updateVideoSliders() {
+    document.getElementById('videoBrightness').value = videoState.brightness;
+    document.getElementById('videoContrast').value = videoState.contrast;
+    document.getElementById('videoSaturation').value = videoState.saturation;
+    document.getElementById('videoHue').value = videoState.hue;
+    document.getElementById('videoVolume').value = videoState.volume;
+    document.getElementById('videoSpeed').value = videoState.speed;
+    document.getElementById('videoOpacity').value = videoState.opacity;
+    
+    document.getElementById('videoBrightnessValue').textContent = videoState.brightness + '%';
+    document.getElementById('videoContrastValue').textContent = videoState.contrast + '%';
+    document.getElementById('videoSaturationValue').textContent = videoState.saturation + '%';
+    document.getElementById('videoHueValue').textContent = videoState.hue + '°';
+    document.getElementById('videoVolumeValue').textContent = videoState.volume + '%';
+    document.getElementById('videoSpeedValue').textContent = videoState.speed + 'x';
+    document.getElementById('videoOpacityValue').textContent = videoState.opacity + '%';
+}
+
+function resetVideoSliders() {
+    document.getElementById('videoBrightness').value = 100;
+    document.getElementById('videoContrast').value = 100;
+    document.getElementById('videoSaturation').value = 100;
+    document.getElementById('videoHue').value = 0;
+    document.getElementById('videoVolume').value = 100;
+    document.getElementById('videoSpeed').value = 1;
+    document.getElementById('videoOpacity').value = 100;
+    updateVideoSliders();
+}
+
+function updateVideoEffectsList() {
+    const list = document.getElementById('videoEffectsList');
+    list.innerHTML = '';
+    const effects = [];
+    if (videoState.brightness !== 100) effects.push(`Brightness: ${videoState.brightness}%`);
+    if (videoState.contrast !== 100) effects.push(`Contrast: ${videoState.contrast}%`);
+    if (videoState.saturation !== 100) effects.push(`Saturation: ${videoState.saturation}%`);
+    if (videoState.hue !== 0) effects.push(`Hue: ${videoState.hue}°`);
+    if (videoState.opacity !== 100) effects.push(`Opacity: ${videoState.opacity}%`);
+    if (videoState.speed !== 1) effects.push(`Speed: ${videoState.speed}x`);
+    if (videoState.currentFilter !== 'original') effects.push(`📌 ${videoState.currentFilter}`);
+    
+    effects.forEach(e => {
+        const badge = document.createElement('div');
+        badge.className = 'effect-badge';
+        badge.textContent = e;
+        list.appendChild(badge);
+    });
+}
+
+// Initialize home page
+showHome();
