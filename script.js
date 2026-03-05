@@ -16,6 +16,7 @@ let photoImage = null;
 let photoContext = null;
 let photoCanvas = document.getElementById('photoCanvas');
 let photoInput = document.getElementById('photoInput');
+let originalPhotoImage = null;
 
 // Load Photo
 photoInput.addEventListener('change', function(e) {
@@ -27,12 +28,24 @@ photoInput.addEventListener('change', function(e) {
         const img = new Image();
         img.onload = function() {
             photoImage = img;
-            photoCanvas.width = img.width > 600 ? 600 : img.width;
-            photoCanvas.height = (img.height / img.width) * photoCanvas.width;
+            originalPhotoImage = img;
+            
+            // Set canvas size
+            const maxWidth = 600;
+            if (img.width > maxWidth) {
+                photoCanvas.width = maxWidth;
+                photoCanvas.height = (img.height / img.width) * maxWidth;
+            } else {
+                photoCanvas.width = img.width;
+                photoCanvas.height = img.height;
+            }
+            
             photoContext = photoCanvas.getContext('2d');
             
+            // Hide placeholder and show canvas
             document.getElementById('photoPlaceholder').style.display = 'none';
             photoCanvas.style.display = 'block';
+            
             drawPhoto();
             showNotification('✅ Photo loaded successfully!');
         };
@@ -69,31 +82,35 @@ function updatePhotoAdjustments() {
 // Photo Tools
 function cropPhoto() {
     if (!photoImage) return showNotification('📷 Please upload a photo first!');
-    showNotification('🔲 Crop tool activated - You can now resize the preview');
-    photoCanvas.style.cursor = 'crosshair';
+    showNotification('🔲 Crop tool activated - Resize the preview to crop');
 }
 
 function rotatePhoto() {
     if (!photoImage) return showNotification('📷 Please upload a photo first!');
-    const canvas = photoCanvas;
-    const temp = canvas.width;
-    canvas.width = canvas.height;
-    canvas.height = temp;
-    photoContext = canvas.getContext('2d');
-    photoContext.translate(canvas.width / 2, canvas.height / 2);
+    
+    const temp = photoCanvas.width;
+    photoCanvas.width = photoCanvas.height;
+    photoCanvas.height = temp;
+    
+    photoContext.save();
+    photoContext.translate(photoCanvas.width / 2, photoCanvas.height / 2);
     photoContext.rotate(Math.PI / 2);
-    photoContext.translate(-canvas.height / 2, -canvas.width / 2);
-    drawPhoto();
+    photoContext.translate(-photoCanvas.height / 2, -photoCanvas.width / 2);
+    photoContext.drawImage(photoImage, 0, 0, photoCanvas.height, photoCanvas.width);
+    photoContext.restore();
+    
     showNotification('🔄 Photo rotated 90°');
 }
 
 function flipPhoto() {
     if (!photoImage) return showNotification('📷 Please upload a photo first!');
+    
     photoContext.save();
     photoContext.scale(-1, 1);
     photoContext.translate(-photoCanvas.width, 0);
-    drawPhoto();
+    photoContext.drawImage(photoImage, 0, 0, photoCanvas.width, photoCanvas.height);
     photoContext.restore();
+    
     showNotification('↔️ Photo flipped horizontally');
 }
 
@@ -110,7 +127,7 @@ function resizePhoto() {
 
 function duplicatePhoto() {
     if (!photoImage) return showNotification('📷 Please upload a photo first!');
-    showNotification('📋 Photo duplicated - You can now edit a copy');
+    showNotification('📋 Photo duplicated - You can edit a copy');
 }
 
 function applyFilter(filterName) {
@@ -204,7 +221,7 @@ videoInput.addEventListener('change', function(e) {
     const url = URL.createObjectURL(file);
     videoElement.src = url;
     document.getElementById('videoPlaceholder').style.display = 'none';
-    videoElement.style.display = 'block';
+    videoElement.classList.add('show');
     showNotification('✅ Video loaded successfully!');
 });
 
@@ -244,17 +261,17 @@ function updateVideoOpacity() {
 // Video Tools
 function splitVideo() {
     if (!videoElement.src) return showNotification('🎥 Please upload a video first!');
-    showNotification('✂️ Split tool activated - Video can now be split at current position');
+    showNotification('✂️ Split tool activated');
 }
 
 function cropVideo() {
     if (!videoElement.src) return showNotification('🎥 Please upload a video first!');
-    showNotification('🔲 Crop tool activated - You can now crop the video dimensions');
+    showNotification('🔲 Crop tool activated');
 }
 
 function duplicateVideo() {
     if (!videoElement.src) return showNotification('🎥 Please upload a video first!');
-    showNotification('📋 Video duplicated - Creating a copy for editing');
+    showNotification('📋 Video duplicated');
 }
 
 function deleteSegment() {
@@ -265,80 +282,77 @@ function deleteSegment() {
 function freezeFrame() {
     if (!videoElement.src) return showNotification('🎥 Please upload a video first!');
     videoElement.pause();
-    showNotification('⏸️ Frame frozen at current position');
+    showNotification('⏸️ Frame frozen');
 }
 
 function reverseVideo() {
     if (!videoElement.src) return showNotification('🎥 Please upload a video first!');
-    showNotification('⏮️ Reverse effect applied - Video will play backwards');
+    showNotification('⏮️ Reverse effect applied');
 }
 
-// Audio Tools
 function extractAudio() {
     if (!videoElement.src) return showNotification('🎥 Please upload a video first!');
-    showNotification('📤 Extracting audio from video...');
+    showNotification('📤 Extracting audio...');
 }
 
 function isolateVoice() {
     if (!videoElement.src) return showNotification('🎥 Please upload a video first!');
-    showNotification('🎤 Voice isolation activated - Background noise being reduced');
+    showNotification('🎤 Voice isolation activated');
 }
 
 function reduceNoise() {
     if (!videoElement.src) return showNotification('🎥 Please upload a video first!');
-    showNotification('🔇 Noise reduction applied to audio');
+    showNotification('🔇 Noise reduction applied');
 }
 
 function enhanceVoice() {
     if (!videoElement.src) return showNotification('🎥 Please upload a video first!');
-    showNotification('📢 Voice enhancement activated - Clarity improved');
+    showNotification('📢 Voice enhancement activated');
 }
 
 function detectBeats() {
     if (!videoElement.src) return showNotification('🎥 Please upload a video first!');
-    showNotification('🎵 Beat detection activated - Analyzing audio rhythm');
+    showNotification('🎵 Beat detection activated');
 }
 
-// Effects Tools
 function addAnimation() {
     if (!videoElement.src) return showNotification('🎥 Please upload a video first!');
-    showNotification('🎨 Animation effects available - Select from library');
+    showNotification('🎨 Animation effects available');
 }
 
 function applyVideoEffect(effectName) {
     if (!videoElement.src) return showNotification('🎥 Please upload a video first!');
-    showNotification(`⚡ ${effectName} effect applied!`);
+    showNotification(`⚡ ${effectName} effect applied`);
 }
 
 function addOverlay() {
     if (!videoElement.src) return showNotification('🎥 Please upload a video first!');
-    showNotification('📐 Overlay tool activated - Add text or graphics');
+    showNotification('📐 Overlay tool activated');
 }
 
 function relight() {
     if (!videoElement.src) return showNotification('🎥 Please upload a video first!');
-    showNotification('💡 Relighting applied - Improving brightness and contrast');
+    showNotification('💡 Relighting applied');
 }
 
 function addMask() {
     if (!videoElement.src) return showNotification('🎥 Please upload a video first!');
-    showNotification('👤 Mask tool activated - Create custom masks');
+    showNotification('👤 Mask tool activated');
 }
 
-// Transform Tools
 function autoReframe() {
     if (!videoElement.src) return showNotification('🎥 Please upload a video first!');
-    showNotification('📺 Auto reframe activated - Optimizing frame composition');
+    showNotification('📺 Auto reframe activated');
 }
 
 function stabilize() {
     if (!videoElement.src) return showNotification('🎥 Please upload a video first!');
-    showNotification('🎯 Video stabilization applied - Reducing camera shake');
+    showNotification('🎯 Stabilization applied');
 }
 
 function unlinkAudio() {
     if (!videoElement.src) return showNotification('🎥 Please upload a video first!');
-    showNotification('🔗 Audio unlinked from video - Can now edit separately');
+    showNotification('🔗 Audio unlinked');
 }
 
 // Trim Functions
@@ -397,5 +411,5 @@ function resetVideo() {
     videoElement.style.filter = 'brightness(100%) contrast(100%)';
     videoElement.style.opacity = 1;
     resetTrim();
-    showNotification('🔄 Video reset to original!');
+    showNotification('🔄 Video reset!');
 }
