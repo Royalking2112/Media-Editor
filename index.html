@@ -1,377 +1,597 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MediaEditor Pro - Photo & Video Editing</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">🎬 MediaEditor Pro</div>
-            <ul class="nav-menu">
-                <li><a href="#" onclick="showHome()" class="nav-link">Home</a></li>
-                <li><a href="#" onclick="showPhotoEditor()" class="nav-link">Photo Editor</a></li>
-                <li><a href="#" onclick="showVideoEditor()" class="nav-link">Video Editor</a></li>
-            </ul>
-        </div>
-    </nav>
+// ==================== PAGE NAVIGATION ====================
 
-    <!-- Home Section -->
-    <section id="home-section" class="main-section show">
-        <div class="hero">
-            <div class="hero-content">
-                <h1>Professional Media Editing</h1>
-                <p>Free online editor for photos and videos</p>
-                <div class="hero-buttons">
-                    <button class="btn btn-primary" onclick="showPhotoEditor()">📸 Photo Editor</button>
-                    <button class="btn btn-secondary" onclick="showVideoEditor()">🎥 Video Editor</button>
-                </div>
-            </div>
-        </div>
+function showHome() {
+    document.getElementById('home-section').classList.add('show');
+    document.getElementById('photo-section').classList.remove('show');
+    document.getElementById('video-section').classList.remove('show');
+}
 
-        <div class="features-section">
-            <div class="container">
-                <h2>Why Choose MediaEditor Pro?</h2>
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">🖼️</div>
-                        <h3>Photo Editing</h3>
-                        <p>Crop, rotate, apply filters, adjust colors, and more</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🎥</div>
-                        <h3>Video Editing</h3>
-                        <p>Trim, adjust speed, add effects, edit audio</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">⚡</div>
-                        <h3>Fast & Free</h3>
-                        <p>No installation, no watermarks, 100% free</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+function showPhotoEditor() {
+    document.getElementById('home-section').classList.remove('show');
+    document.getElementById('photo-section').classList.add('show');
+    document.getElementById('video-section').classList.remove('show');
+}
 
-    <!-- Photo Editor Section -->
-    <section id="photo-section" class="main-section">
-        <div class="editor-container">
-            <!-- Left Side - Preview & Upload -->
-            <div class="editor-left">
-                <div class="preview-section">
-                    <div class="upload-area" id="photoUploadArea">
-                        <input type="file" id="photoInput" accept="image/*" hidden>
-                        <div class="upload-placeholder">
-                            <p>📷 Click to upload or drag photo here</p>
-                            <small>JPG, PNG, GIF supported</small>
-                        </div>
-                    </div>
-                    <canvas id="photoCanvas" style="display: none; width: 100%; border-radius: 8px;"></canvas>
-                </div>
+function showVideoEditor() {
+    document.getElementById('home-section').classList.remove('show');
+    document.getElementById('photo-section').classList.remove('show');
+    document.getElementById('video-section').classList.add('show');
+}
 
-                <!-- Active Effects Display -->
-                <div class="active-effects">
-                    <h4>✨ Active Adjustments:</h4>
-                    <div id="photoEffectsList"></div>
-                </div>
-            </div>
+function showNotification(msg) {
+    const notification = document.getElementById('notification');
+    notification.textContent = msg;
+    notification.classList.add('show');
+    setTimeout(() => notification.classList.remove('show'), 3000);
+}
 
-            <!-- Right Side - Controls -->
-            <div class="editor-right">
-                <div class="controls-container">
-                    <!-- Quick Actions -->
-                    <div class="control-section">
-                        <h3>⚡ Quick Actions</h3>
-                        <div class="action-buttons">
-                            <button class="btn-action" onclick="downloadPhoto()">⬇️ Download</button>
-                            <button class="btn-action btn-danger" onclick="resetAllPhoto()">🔄 Reset All</button>
-                        </div>
-                    </div>
+// ==================== PHOTO EDITOR ====================
 
-                    <!-- Basic Tools -->
-                    <div class="control-section">
-                        <h3>🛠️ Basic Tools</h3>
-                        <div class="tool-buttons">
-                            <button class="tool-btn" onclick="rotatePhoto90()">🔄 Rotate 90°</button>
-                            <button class="tool-btn" onclick="flipPhotoHorizontal()">↔️ Flip H</button>
-                            <button class="tool-btn" onclick="flipPhotoVertical()">↕️ Flip V</button>
-                            <button class="tool-btn" onclick="resizePhotoDialog()">📏 Resize</button>
-                        </div>
-                    </div>
+let photoImage = null;
+let photoContext = null;
+let photoCanvas = document.getElementById('photoCanvas');
+let photoInput = document.getElementById('photoInput');
+let photoUploadArea = document.getElementById('photoUploadArea');
 
-                    <!-- Filters -->
-                    <div class="control-section">
-                        <h3>🎨 Filters</h3>
-                        <div class="filter-buttons">
-                            <button class="filter-btn" onclick="applyPhotoFilter('original')">Original</button>
-                            <button class="filter-btn" onclick="applyPhotoFilter('grayscale')">⚫ B&W</button>
-                            <button class="filter-btn" onclick="applyPhotoFilter('sepia')">🟤 Sepia</button>
-                            <button class="filter-btn" onclick="applyPhotoFilter('vintage')">📸 Vintage</button>
-                            <button class="filter-btn" onclick="applyPhotoFilter('cool')">❄️ Cool</button>
-                            <button class="filter-btn" onclick="applyPhotoFilter('warm')">🔥 Warm</button>
-                            <button class="filter-btn" onclick="applyPhotoFilter('invert')">🔲 Invert</button>
-                        </div>
-                    </div>
+let photoState = {
+    brightness: 100,
+    contrast: 100,
+    saturation: 100,
+    hue: 0,
+    exposure: 0,
+    sharpness: 0,
+    opacity: 100,
+    currentFilter: 'original'
+};
 
-                    <!-- Adjustments -->
-                    <div class="control-section">
-                        <h3>🎚️ Adjustments</h3>
-                        
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>☀️ Brightness</label>
-                                <span class="slider-value" id="photoBrightnessValue">100%</span>
-                            </div>
-                            <input type="range" id="photoBrightness" min="0" max="200" value="100" class="slider" oninput="updatePhotoAdjustment('brightness')">
-                        </div>
+// Photo Upload
+photoUploadArea.addEventListener('click', () => photoInput.click());
+photoUploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    photoUploadArea.style.borderColor = '#764ba2';
+});
+photoUploadArea.addEventListener('dragleave', () => {
+    photoUploadArea.style.borderColor = '#667eea';
+});
+photoUploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (e.dataTransfer.files[0]) loadPhotoFile(e.dataTransfer.files[0]);
+});
 
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>◐ Contrast</label>
-                                <span class="slider-value" id="photoContrastValue">100%</span>
-                            </div>
-                            <input type="range" id="photoContrast" min="0" max="200" value="100" class="slider" oninput="updatePhotoAdjustment('contrast')">
-                        </div>
+photoInput.addEventListener('change', (e) => {
+    if (e.target.files[0]) loadPhotoFile(e.target.files[0]);
+});
 
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>🎨 Saturation</label>
-                                <span class="slider-value" id="photoSaturationValue">100%</span>
-                            </div>
-                            <input type="range" id="photoSaturation" min="0" max="200" value="100" class="slider" oninput="updatePhotoAdjustment('saturation')">
-                        </div>
+function loadPhotoFile(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+            photoImage = img;
+            const maxWidth = 600;
+            photoCanvas.width = Math.min(img.width, maxWidth);
+            photoCanvas.height = (img.height / img.width) * photoCanvas.width;
+            photoContext = photoCanvas.getContext('2d');
+            photoUploadArea.style.display = 'none';
+            photoCanvas.style.display = 'block';
+            renderPhoto();
+            showNotification('✅ Photo loaded!');
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
 
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>🌈 Hue</label>
-                                <span class="slider-value" id="photoHueValue">0°</span>
-                            </div>
-                            <input type="range" id="photoHue" min="0" max="360" value="0" class="slider" oninput="updatePhotoAdjustment('hue')">
-                        </div>
+function renderPhoto() {
+    if (!photoImage || !photoContext) return;
+    photoContext.clearRect(0, 0, photoCanvas.width, photoCanvas.height);
+    photoContext.filter = `
+        brightness(${photoState.brightness}%)
+        contrast(${photoState.contrast}%)
+        saturate(${photoState.saturation}%)
+        hue-rotate(${photoState.hue}deg)
+    `;
+    photoContext.globalAlpha = photoState.opacity / 100;
+    photoContext.drawImage(photoImage, 0, 0, photoCanvas.width, photoCanvas.height);
+    photoContext.globalAlpha = 1;
+    updatePhotoEffectsList();
+}
 
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>☀️ Exposure</label>
-                                <span class="slider-value" id="photoExposureValue">0</span>
-                            </div>
-                            <input type="range" id="photoExposure" min="-50" max="50" value="0" class="slider" oninput="updatePhotoAdjustment('exposure')">
-                        </div>
+function updatePhotoAdjustment(type) {
+    const value = document.getElementById('photo' + type.charAt(0).toUpperCase() + type.slice(1)).value;
+    photoState[type] = parseInt(value);
+    
+    const displayMap = {
+        brightness: 'photoBrightnessValue',
+        contrast: 'photoContrastValue',
+        saturation: 'photoSaturationValue',
+        hue: 'photoHueValue',
+        exposure: 'photoExposureValue',
+        sharpness: 'photoSharpnessValue',
+        opacity: 'photoOpacityValue'
+    };
+    
+    const display = document.getElementById(displayMap[type]);
+    if (display) {
+        if (type === 'hue') display.textContent = value + '°';
+        else if (type === 'exposure' || type === 'sharpness') display.textContent = value;
+        else display.textContent = value + '%';
+    }
+    
+    renderPhoto();
+}
 
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>🎯 Sharpness</label>
-                                <span class="slider-value" id="photoSharpnessValue">0</span>
-                            </div>
-                            <input type="range" id="photoSharpness" min="0" max="100" value="0" class="slider" oninput="updatePhotoAdjustment('sharpness')">
-                        </div>
+function applyPhotoFilter(name) {
+    if (!photoImage) return showNotification('📷 Upload a photo first!');
+    
+    photoState.currentFilter = name;
+    
+    if (name === 'original') {
+        photoState = { brightness: 100, contrast: 100, saturation: 100, hue: 0, exposure: 0, sharpness: 0, opacity: 100, currentFilter: 'original' };
+        resetPhotoSliders();
+    } else if (name === 'grayscale') {
+        photoState.saturation = 0;
+    } else if (name === 'sepia') {
+        photoState.saturation = 50;
+        photoState.hue = 30;
+    } else if (name === 'vintage') {
+        photoState.saturation = 150;
+        photoState.hue = 20;
+        photoState.brightness = 110;
+    } else if (name === 'cool') {
+        photoState.hue = 180;
+        photoState.saturation = 120;
+    } else if (name === 'warm') {
+        photoState.hue = 20;
+        photoState.saturation = 120;
+        photoState.brightness = 110;
+    } else if (name === 'invert') {
+        photoState.brightness = 100;
+        photoState.contrast = 150;
+    }
+    
+    updatePhotoSliders();
+    renderPhoto();
+    showNotification('✨ ' + name.toUpperCase() + ' filter applied!');
+}
 
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>👻 Opacity</label>
-                                <span class="slider-value" id="photoOpacityValue">100%</span>
-                            </div>
-                            <input type="range" id="photoOpacity" min="0" max="100" value="100" class="slider" oninput="updatePhotoAdjustment('opacity')">
-                        </div>
-                    </div>
+function applyPhotoEffect(name) {
+    if (!photoImage) return showNotification('📷 Upload a photo first!');
+    
+    if (name === 'glow') {
+        photoState.brightness = 120;
+        photoState.saturation = 120;
+    } else if (name === 'vignette') {
+        photoState.brightness = 85;
+        photoState.saturation = 110;
+    } else if (name === 'fade') {
+        photoState.contrast = 70;
+        photoState.saturation = 50;
+    }
+    
+    updatePhotoSliders();
+    renderPhoto();
+    showNotification('✨ ' + name + ' effect applied!');
+}
 
-                    <!-- Effects -->
-                    <div class="control-section">
-                        <h3>✨ Effects</h3>
-                        <div class="effect-buttons">
-                            <button class="effect-btn" onclick="applyPhotoEffect('glow')">💫 Glow</button>
-                            <button class="effect-btn" onclick="applyPhotoEffect('vignette')">🎯 Vignette</button>
-                            <button class="effect-btn" onclick="applyPhotoEffect('fade')">🌅 Fade</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+function rotatePhoto90() {
+    if (!photoImage) return showNotification('📷 Upload a photo first!');
+    const temp = photoCanvas.width;
+    photoCanvas.width = photoCanvas.height;
+    photoCanvas.height = temp;
+    photoContext = photoCanvas.getContext('2d');
+    photoContext.translate(photoCanvas.width / 2, photoCanvas.height / 2);
+    photoContext.rotate(Math.PI / 2);
+    photoContext.translate(-photoCanvas.height / 2, -photoCanvas.width / 2);
+    renderPhoto();
+    showNotification('🔄 Rotated 90°!');
+}
 
-    <!-- Video Editor Section -->
-    <section id="video-section" class="main-section">
-        <div class="editor-container">
-            <!-- Left Side - Preview & Upload -->
-            <div class="editor-left">
-                <div class="preview-section">
-                    <div class="upload-area" id="videoUploadArea">
-                        <input type="file" id="videoInput" accept="video/*" hidden>
-                        <div class="upload-placeholder">
-                            <p>🎬 Click to upload or drag video here</p>
-                            <small>MP4, WebM, Ogg supported</small>
-                        </div>
-                    </div>
-                    <video id="videoPreview" style="display: none; width: 100%; border-radius: 8px; background: #000;" controls></video>
-                </div>
+function flipPhotoHorizontal() {
+    if (!photoImage) return showNotification('📷 Upload a photo first!');
+    photoContext.save();
+    photoContext.scale(-1, 1);
+    photoContext.translate(-photoCanvas.width, 0);
+    renderPhoto();
+    photoContext.restore();
+    showNotification('↔️ Flipped horizontally!');
+}
 
-                <!-- Timeline -->
-                <div class="timeline-section" id="timelineSection" style="display: none;">
-                    <h4>⏱️ Timeline</h4>
-                    <div class="timeline">
-                        <span id="currentTimeDisplay">0:00</span>
-                        <input type="range" id="videoTimeline" class="timeline-slider" oninput="seekVideo()" min="0" value="0">
-                        <span id="durationDisplay">0:00</span>
-                    </div>
-                </div>
+function flipPhotoVertical() {
+    if (!photoImage) return showNotification('📷 Upload a photo first!');
+    photoContext.save();
+    photoContext.scale(1, -1);
+    photoContext.translate(0, -photoCanvas.height);
+    renderPhoto();
+    photoContext.restore();
+    showNotification('↕️ Flipped vertically!');
+}
 
-                <!-- Active Effects Display -->
-                <div class="active-effects">
-                    <h4>✨ Active Adjustments:</h4>
-                    <div id="videoEffectsList"></div>
-                </div>
-            </div>
+function resizePhotoDialog() {
+    if (!photoImage) return showNotification('📷 Upload a photo first!');
+    const width = prompt('Enter new width:', photoCanvas.width);
+    if (width) {
+        photoCanvas.width = parseInt(width);
+        photoCanvas.height = (photoImage.height / photoImage.width) * photoCanvas.width;
+        renderPhoto();
+        showNotification('📏 Resized!');
+    }
+}
 
-            <!-- Right Side - Controls -->
-            <div class="editor-right">
-                <div class="controls-container">
-                    <!-- Playback Controls -->
-                    <div class="control-section">
-                        <h3>▶️ Playback</h3>
-                        <div class="playback-buttons" id="videoPlaybackControls" style="display: none;">
-                            <button class="btn-action" id="videoPlayBtn" onclick="toggleVideoPlay()">▶️ Play</button>
-                            <button class="btn-action" onclick="pauseVideo()">⏸️ Pause</button>
-                            <button class="btn-action" onclick="stopVideo()">⏹️ Stop</button>
-                        </div>
-                    </div>
+function downloadPhoto() {
+    if (!photoImage) return showNotification('📷 Upload a photo first!');
+    const link = document.createElement('a');
+    link.href = photoCanvas.toDataURL('image/png');
+    link.download = `photo-${Date.now()}.png`;
+    link.click();
+    showNotification('⬇️ Downloaded!');
+}
 
-                    <!-- Quick Actions -->
-                    <div class="control-section">
-                        <h3>⚡ Quick Actions</h3>
-                        <div class="action-buttons">
-                            <button class="btn-action" onclick="downloadVideo()">⬇️ Download</button>
-                            <button class="btn-action btn-danger" onclick="resetAllVideo()">🔄 Reset All</button>
-                        </div>
-                    </div>
+function resetAllPhoto() {
+    if (!photoImage) return;
+    photoState = { brightness: 100, contrast: 100, saturation: 100, hue: 0, exposure: 0, sharpness: 0, opacity: 100, currentFilter: 'original' };
+    resetPhotoSliders();
+    renderPhoto();
+    showNotification('🔄 Reset all!');
+}
 
-                    <!-- Edit Tools -->
-                    <div class="control-section">
-                        <h3>✂️ Edit Tools</h3>
-                        <div class="tool-buttons">
-                            <button class="tool-btn" onclick="activateVideoTrim()">✂️ Trim</button>
-                            <button class="tool-btn" onclick="reverseVideo()">⏮️ Reverse</button>
-                            <button class="tool-btn" onclick="freezeFrame()">⏸️ Freeze</button>
-                        </div>
-                    </div>
+function updatePhotoSliders() {
+    document.getElementById('photoBrightness').value = photoState.brightness;
+    document.getElementById('photoContrast').value = photoState.contrast;
+    document.getElementById('photoSaturation').value = photoState.saturation;
+    document.getElementById('photoHue').value = photoState.hue;
+    document.getElementById('photoExposure').value = photoState.exposure;
+    document.getElementById('photoSharpness').value = photoState.sharpness;
+    document.getElementById('photoOpacity').value = photoState.opacity;
+    
+    document.getElementById('photoBrightnessValue').textContent = photoState.brightness + '%';
+    document.getElementById('photoContrastValue').textContent = photoState.contrast + '%';
+    document.getElementById('photoSaturationValue').textContent = photoState.saturation + '%';
+    document.getElementById('photoHueValue').textContent = photoState.hue + '°';
+    document.getElementById('photoExposureValue').textContent = photoState.exposure;
+    document.getElementById('photoSharpnessValue').textContent = photoState.sharpness;
+    document.getElementById('photoOpacityValue').textContent = photoState.opacity + '%';
+}
 
-                    <!-- Audio Controls -->
-                    <div class="control-section">
-                        <h3>🔊 Audio Controls</h3>
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>🔊 Volume</label>
-                                <span class="slider-value" id="videoVolumeValue">100%</span>
-                            </div>
-                            <input type="range" id="videoVolume" min="0" max="100" value="100" class="slider" oninput="updateVideoAdjustment('volume')">
-                        </div>
+function resetPhotoSliders() {
+    document.getElementById('photoBrightness').value = 100;
+    document.getElementById('photoContrast').value = 100;
+    document.getElementById('photoSaturation').value = 100;
+    document.getElementById('photoHue').value = 0;
+    document.getElementById('photoExposure').value = 0;
+    document.getElementById('photoSharpness').value = 0;
+    document.getElementById('photoOpacity').value = 100;
+    updatePhotoSliders();
+}
 
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>⏱️ Speed</label>
-                                <span class="slider-value" id="videoSpeedValue">1.0x</span>
-                            </div>
-                            <input type="range" id="videoSpeed" min="0.5" max="2" step="0.25" value="1" class="slider" oninput="updateVideoAdjustment('speed')">
-                        </div>
+function updatePhotoEffectsList() {
+    const list = document.getElementById('photoEffectsList');
+    list.innerHTML = '';
+    const effects = [];
+    if (photoState.brightness !== 100) effects.push(`Brightness: ${photoState.brightness}%`);
+    if (photoState.contrast !== 100) effects.push(`Contrast: ${photoState.contrast}%`);
+    if (photoState.saturation !== 100) effects.push(`Saturation: ${photoState.saturation}%`);
+    if (photoState.hue !== 0) effects.push(`Hue: ${photoState.hue}°`);
+    if (photoState.opacity !== 100) effects.push(`Opacity: ${photoState.opacity}%`);
+    if (photoState.currentFilter !== 'original') effects.push(`📌 ${photoState.currentFilter}`);
+    
+    effects.forEach(e => {
+        const badge = document.createElement('div');
+        badge.className = 'effect-badge';
+        badge.textContent = e;
+        list.appendChild(badge);
+    });
+}
 
-                        <div class="tool-buttons">
-                            <button class="tool-btn" onclick="muteVideo()">🔇 Mute</button>
-                            <button class="tool-btn" onclick="unmuteVideo()">🔊 Unmute</button>
-                        </div>
-                    </div>
+// ==================== VIDEO EDITOR ====================
 
-                    <!-- Video Adjustments -->
-                    <div class="control-section">
-                        <h3>🎚️ Adjustments</h3>
-                        
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>☀️ Brightness</label>
-                                <span class="slider-value" id="videoBrightnessValue">100%</span>
-                            </div>
-                            <input type="range" id="videoBrightness" min="0" max="200" value="100" class="slider" oninput="updateVideoAdjustment('brightness')">
-                        </div>
+let videoPreview = document.getElementById('videoPreview');
+let videoInput = document.getElementById('videoInput');
+let videoUploadArea = document.getElementById('videoUploadArea');
 
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>◐ Contrast</label>
-                                <span class="slider-value" id="videoContrastValue">100%</span>
-                            </div>
-                            <input type="range" id="videoContrast" min="0" max="200" value="100" class="slider" oninput="updateVideoAdjustment('contrast')">
-                        </div>
+let videoState = {
+    brightness: 100,
+    contrast: 100,
+    saturation: 100,
+    hue: 0,
+    volume: 100,
+    speed: 1,
+    opacity: 100,
+    currentFilter: 'original'
+};
 
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>🎨 Saturation</label>
-                                <span class="slider-value" id="videoSaturationValue">100%</span>
-                            </div>
-                            <input type="range" id="videoSaturation" min="0" max="200" value="100" class="slider" oninput="updateVideoAdjustment('saturation')">
-                        </div>
+let trimStart = null;
+let trimEnd = null;
 
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>🌈 Hue</label>
-                                <span class="slider-value" id="videoHueValue">0°</span>
-                            </div>
-                            <input type="range" id="videoHue" min="0" max="360" value="0" class="slider" oninput="updateVideoAdjustment('hue')">
-                        </div>
+// Video Upload
+videoUploadArea.addEventListener('click', () => videoInput.click());
+videoUploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    videoUploadArea.style.borderColor = '#764ba2';
+});
+videoUploadArea.addEventListener('dragleave', () => {
+    videoUploadArea.style.borderColor = '#667eea';
+});
+videoUploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (e.dataTransfer.files[0]) loadVideoFile(e.dataTransfer.files[0]);
+});
 
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>👻 Opacity</label>
-                                <span class="slider-value" id="videoOpacityValue">100%</span>
-                            </div>
-                            <input type="range" id="videoOpacity" min="0" max="100" value="100" class="slider" oninput="updateVideoAdjustment('opacity')">
-                        </div>
-                    </div>
+videoInput.addEventListener('change', (e) => {
+    if (e.target.files[0]) loadVideoFile(e.target.files[0]);
+});
 
-                    <!-- Filters -->
-                    <div class="control-section">
-                        <h3>🎬 Filters</h3>
-                        <div class="filter-buttons">
-                            <button class="filter-btn" onclick="applyVideoFilter('original')">Original</button>
-                            <button class="filter-btn" onclick="applyVideoFilter('grayscale')">⚫ B&W</button>
-                            <button class="filter-btn" onclick="applyVideoFilter('sepia')">🟤 Sepia</button>
-                            <button class="filter-btn" onclick="applyVideoFilter('cool')">❄️ Cool</button>
-                            <button class="filter-btn" onclick="applyVideoFilter('warm')">🔥 Warm</button>
-                            <button class="filter-btn" onclick="applyVideoFilter('invert')">🔲 Invert</button>
-                        </div>
-                    </div>
+function loadVideoFile(file) {
+    const url = URL.createObjectURL(file);
+    videoPreview.src = url;
+    videoUploadArea.style.display = 'none';
+    videoPreview.style.display = 'block';
+    document.getElementById('timelineSection').style.display = 'block';
+    document.getElementById('videoPlaybackControls').style.display = 'flex';
+    showNotification('✅ Video loaded!');
+}
 
-                    <!-- Effects -->
-                    <div class="control-section">
-                        <h3>✨ Effects</h3>
-                        <div class="effect-buttons">
-                            <button class="effect-btn" onclick="applyVideoEffect('blur')">🌫️ Blur</button>
-                            <button class="effect-btn" onclick="applyVideoEffect('glow')">💫 Glow</button>
-                            <button class="effect-btn" onclick="applyVideoEffect('fade')">🌅 Fade</button>
-                        </div>
-                    </div>
+videoPreview.addEventListener('loadedmetadata', () => {
+    document.getElementById('videoTimeline').max = videoPreview.duration;
+    updateVideoTimeDisplay();
+});
 
-                    <!-- Trim Controls -->
-                    <div class="control-section" id="videoTrimControls" style="display: none;">
-                        <h3>✂️ Trim Video</h3>
-                        <div class="trim-buttons">
-                            <button class="btn-action" onclick="setTrimStart()">⏹️ Mark Start</button>
-                            <button class="btn-action" onclick="setTrimEnd()">⏹️ Mark End</button>
-                            <button class="btn-action btn-danger" onclick="resetTrim()">🔄 Reset Trim</button>
-                        </div>
-                        <p id="trimInfo">No trim set</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+videoPreview.addEventListener('timeupdate', () => {
+    document.getElementById('videoTimeline').value = videoPreview.currentTime;
+    updateVideoTimeDisplay();
+});
 
-    <!-- Notification -->
-    <div id="notification" class="notification"></div>
+function updateVideoTimeDisplay() {
+    const current = formatTime(videoPreview.currentTime);
+    const duration = formatTime(videoPreview.duration);
+    document.getElementById('currentTimeDisplay').textContent = current;
+    document.getElementById('durationDisplay').textContent = duration;
+}
 
-    <!-- Footer -->
-    <footer class="footer">
-        <p>&copy; 2026 MediaEditor Pro. Built by Royalking2112 ❤️</p>
-    </footer>
+function formatTime(s) {
+    if (isNaN(s)) return '0:00';
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, '0')}`;
+}
 
-    <script src="script.js"></script>
-</body>
-</html>
+function seekVideo() {
+    videoPreview.currentTime = document.getElementById('videoTimeline').value;
+}
+
+function toggleVideoPlay() {
+    if (videoPreview.paused) {
+        videoPreview.play();
+        document.getElementById('videoPlayBtn').textContent = '⏸️ Pause';
+    } else {
+        videoPreview.pause();
+        document.getElementById('videoPlayBtn').textContent = '▶️ Play';
+    }
+}
+
+function pauseVideo() {
+    videoPreview.pause();
+}
+
+function stopVideo() {
+    videoPreview.pause();
+    videoPreview.currentTime = 0;
+    document.getElementById('videoPlayBtn').textContent = '▶️ Play';
+}
+
+function updateVideoAdjustment(type) {
+    const value = document.getElementById('video' + type.charAt(0).toUpperCase() + type.slice(1)).value;
+    videoState[type] = parseFloat(value);
+    
+    const displayMap = {
+        brightness: 'videoBrightnessValue',
+        contrast: 'videoContrastValue',
+        saturation: 'videoSaturationValue',
+        hue: 'videoHueValue',
+        volume: 'videoVolumeValue',
+        speed: 'videoSpeedValue',
+        opacity: 'videoOpacityValue'
+    };
+    
+    const display = document.getElementById(displayMap[type]);
+    if (display) {
+        if (type === 'speed') display.textContent = value + 'x';
+        else if (type === 'hue') display.textContent = value + '°';
+        else display.textContent = value + '%';
+    }
+    
+    if (type === 'volume') videoPreview.volume = value / 100;
+    if (type === 'speed') videoPreview.playbackRate = value;
+    
+    applyVideoFilters();
+}
+
+function applyVideoFilters() {
+    videoPreview.style.filter = `
+        brightness(${videoState.brightness}%)
+        contrast(${videoState.contrast}%)
+        saturate(${videoState.saturation}%)
+        hue-rotate(${videoState.hue}deg)
+    `;
+    videoPreview.style.opacity = videoState.opacity / 100;
+    updateVideoEffectsList();
+}
+
+function applyVideoFilter(name) {
+    if (!videoPreview.src) return showNotification('🎥 Upload a video first!');
+    
+    videoState.currentFilter = name;
+    
+    if (name === 'original') {
+        videoState = { brightness: 100, contrast: 100, saturation: 100, hue: 0, volume: 100, speed: 1, opacity: 100, currentFilter: 'original' };
+        resetVideoSliders();
+    } else if (name === 'grayscale') {
+        videoState.saturation = 0;
+    } else if (name === 'sepia') {
+        videoState.saturation = 50;
+        videoState.hue = 30;
+    } else if (name === 'cool') {
+        videoState.hue = 180;
+        videoState.saturation = 120;
+    } else if (name === 'warm') {
+        videoState.hue = 20;
+        videoState.saturation = 120;
+        videoState.brightness = 110;
+    } else if (name === 'invert') {
+        videoState.contrast = 150;
+    }
+    
+    updateVideoSliders();
+    applyVideoFilters();
+    showNotification('✨ ' + name.toUpperCase() + ' filter applied!');
+}
+
+function applyVideoEffect(name) {
+    if (!videoPreview.src) return showNotification('🎥 Upload a video first!');
+    
+    if (name === 'blur') {
+        videoState.brightness = 95;
+    } else if (name === 'glow') {
+        videoState.brightness = 120;
+        videoState.saturation = 120;
+    } else if (name === 'fade') {
+        videoState.contrast = 70;
+        videoState.saturation = 50;
+    }
+    
+    updateVideoSliders();
+    applyVideoFilters();
+    showNotification('✨ ' + name + ' effect applied!');
+}
+
+function activateVideoTrim() {
+    if (!videoPreview.src) return showNotification('🎥 Upload a video first!');
+    document.getElementById('videoTrimControls').style.display = 'block';
+    showNotification('✂️ Trim mode activated!');
+}
+
+function reverseVideo() {
+    if (!videoPreview.src) return showNotification('🎥 Upload a video first!');
+    showNotification('⏮️ Reverse effect (requires server-side processing)');
+}
+
+function freezeFrame() {
+    if (!videoPreview.src) return showNotification('🎥 Upload a video first!');
+    videoPreview.pause();
+    showNotification('⏸️ Frame frozen!');
+}
+
+function muteVideo() {
+    videoPreview.volume = 0;
+    videoState.volume = 0;
+    document.getElementById('videoVolume').value = 0;
+    document.getElementById('videoVolumeValue').textContent = '0%';
+    showNotification('🔇 Muted!');
+}
+
+function unmuteVideo() {
+    videoPreview.volume = 1;
+    videoState.volume = 100;
+    document.getElementById('videoVolume').value = 100;
+    document.getElementById('videoVolumeValue').textContent = '100%';
+    showNotification('🔊 Unmuted!');
+}
+
+function setTrimStart() {
+    trimStart = videoPreview.currentTime;
+    updateTrimInfo();
+    showNotification('⏹️ Trim start: ' + formatTime(trimStart));
+}
+
+function setTrimEnd() {
+    trimEnd = videoPreview.currentTime;
+    updateTrimInfo();
+    showNotification('⏹️ Trim end: ' + formatTime(trimEnd));
+}
+
+function resetTrim() {
+    trimStart = null;
+    trimEnd = null;
+    updateTrimInfo();
+    showNotification('🔄 Trim reset!');
+}
+
+function updateTrimInfo() {
+    const info = document.getElementById('trimInfo');
+    if (trimStart === null || trimEnd === null) {
+        info.textContent = 'No trim set';
+    } else {
+        info.textContent = `✂️ Trim: ${formatTime(trimStart)} - ${formatTime(trimEnd)}`;
+    }
+}
+
+function downloadVideo() {
+    if (!videoPreview.src) return showNotification('🎥 Upload a video first!');
+    const link = document.createElement('a');
+    link.href = videoPreview.src;
+    link.download = `video-${Date.now()}.mp4`;
+    link.click();
+    showNotification('⬇️ Downloaded!');
+}
+
+function resetAllVideo() {
+    if (!videoPreview.src) return;
+    videoState = { brightness: 100, contrast: 100, saturation: 100, hue: 0, volume: 100, speed: 1, opacity: 100, currentFilter: 'original' };
+    resetVideoSliders();
+    videoPreview.volume = 1;
+    videoPreview.playbackRate = 1;
+    applyVideoFilters();
+    showNotification('🔄 Reset all!');
+}
+
+function updateVideoSliders() {
+    document.getElementById('videoBrightness').value = videoState.brightness;
+    document.getElementById('videoContrast').value = videoState.contrast;
+    document.getElementById('videoSaturation').value = videoState.saturation;
+    document.getElementById('videoHue').value = videoState.hue;
+    document.getElementById('videoVolume').value = videoState.volume;
+    document.getElementById('videoSpeed').value = videoState.speed;
+    document.getElementById('videoOpacity').value = videoState.opacity;
+    
+    document.getElementById('videoBrightnessValue').textContent = videoState.brightness + '%';
+    document.getElementById('videoContrastValue').textContent = videoState.contrast + '%';
+    document.getElementById('videoSaturationValue').textContent = videoState.saturation + '%';
+    document.getElementById('videoHueValue').textContent = videoState.hue + '°';
+    document.getElementById('videoVolumeValue').textContent = videoState.volume + '%';
+    document.getElementById('videoSpeedValue').textContent = videoState.speed + 'x';
+    document.getElementById('videoOpacityValue').textContent = videoState.opacity + '%';
+}
+
+function resetVideoSliders() {
+    document.getElementById('videoBrightness').value = 100;
+    document.getElementById('videoContrast').value = 100;
+    document.getElementById('videoSaturation').value = 100;
+    document.getElementById('videoHue').value = 0;
+    document.getElementById('videoVolume').value = 100;
+    document.getElementById('videoSpeed').value = 1;
+    document.getElementById('videoOpacity').value = 100;
+    updateVideoSliders();
+}
+
+function updateVideoEffectsList() {
+    const list = document.getElementById('videoEffectsList');
+    list.innerHTML = '';
+    const effects = [];
+    if (videoState.brightness !== 100) effects.push(`Brightness: ${videoState.brightness}%`);
+    if (videoState.contrast !== 100) effects.push(`Contrast: ${videoState.contrast}%`);
+    if (videoState.saturation !== 100) effects.push(`Saturation: ${videoState.saturation}%`);
+    if (videoState.hue !== 0) effects.push(`Hue: ${videoState.hue}°`);
+    if (videoState.opacity !== 100) effects.push(`Opacity: ${videoState.opacity}%`);
+    if (videoState.speed !== 1) effects.push(`Speed: ${videoState.speed}x`);
+    if (videoState.currentFilter !== 'original') effects.push(`📌 ${videoState.currentFilter}`);
+    
+    effects.forEach(e => {
+        const badge = document.createElement('div');
+        badge.className = 'effect-badge';
+        badge.textContent = e;
+        list.appendChild(badge);
+    });
+}
+
+// Initialize home page
+showHome();
