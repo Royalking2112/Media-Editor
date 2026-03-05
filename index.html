@@ -3,53 +3,344 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Media Editor Interface</title>
-    <style>
-        body { font-family: Arial, sans-serif; }
-        .editor { padding: 20px; }
-        .button { margin: 5px; }
-    </style>
+    <title>Media Editor - Video & Photo Editing Online</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="editor">
-        <h1>Media Editor Interface</h1>
-        <div>
-            <button class="button">Split</button>
-            <button class="button">Volume</button>
-            <div class="dropdown">
-                <button class="button">Advanced Editing</button>
-                <div class="dropdown-content">
-                    <button>Animation</button>
-                    <button>Effects</button>
-                    <button>Delete</button>
-                    <button>Speed</button>
-                    <button>Beats</button>
-                    <button>Crop</button>
-                    <button>Duplicate</button>
-                    <button>Replace</button>
-                    <button>Overlay</button>
-                    <button>Adjust</button>
-                    <button>Filters</button>
-                    <button>Retouch</button>
-                    <button>Remove BG</button>
-                    <button>Relight</button>
-                    <button>Opacity</button>
-                    <button>Motion Blur</button>
-                    <button>Transform</button>
-                    <button>Auto Reframe</button>
-                    <button>Stabilization</button>
-                    <button>Extract Audio</button>
-                    <button>Isolate Voice</button>
-                    <button>Reduce Noise</button>
-                    <button>Audio Effects</button>
-                    <button>Enhance Voice</button>
-                    <button>Freeze</button>
-                    <button>Reverse</button>
-                    <button>Mask</button>
-                    <button>Unlink</button>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🎬 MediaEditor</div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#photo" class="nav-link">Photo Editor</a></li>
+                <li><a href="#video" class="nav-link">Video Editor</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>Professional Media Editing</h1>
+            <p>Edit your photos and videos with ease. No software download required!</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary" onclick="scrollTo('photo')">Photo Editor</button>
+                <button class="btn btn-secondary" onclick="scrollTo('video')">Video Editor</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Photo Editor Section -->
+    <section id="photo" class="editor-section">
+        <div class="container">
+            <h2>Photo Editor</h2>
+            
+            <div class="editor-layout">
+                <div class="editor-preview">
+                    <canvas id="photoCanvas"></canvas>
+                    <p class="placeholder" id="photoPlaceholder">Upload an image to start editing</p>
+                </div>
+
+                <div class="editor-controls">
+                    <div class="control-group">
+                        <label for="photoInput">Upload Image:</label>
+                        <input type="file" id="photoInput" accept="image/*">
+                    </div>
+
+                    <!-- Quick Edit Options -->
+                    <div class="quick-edit-section">
+                        <h4>Quick Edit Options</h4>
+                        <div class="edit-buttons-grid">
+                            <button class="edit-btn" onclick="toggleMenu('photoEditMenu')">
+                                ⚙️ Edit Options
+                            </button>
+                            <button class="edit-btn" onclick="toggleMenu('photoFiltersMenu')">
+                                🎨 Filters
+                            </button>
+                            <button class="edit-btn" onclick="toggleMenu('photoEffectsMenu')">
+                                ✨ Effects
+                            </button>
+                            <button class="edit-btn" onclick="toggleMenu('photoAdjustMenu')">
+                                🎚️ Adjust
+                            </button>
+                        </div>
+
+                        <!-- Photo Edit Menu -->
+                        <div class="dropdown-menu" id="photoEditMenu">
+                            <div class="menu-content">
+                                <h5>Edit Tools</h5>
+                                <button class="menu-item" onclick="activateTool('crop')">🔲 Crop</button>
+                                <button class="menu-item" onclick="activateTool('rotate')">🔄 Rotate</button>
+                                <button class="menu-item" onclick="activateTool('flip')">↔️ Flip</button>
+                                <button class="menu-item" onclick="activateTool('resize')">📏 Resize</button>
+                                <button class="menu-item" onclick="activateTool('duplicate')">📋 Duplicate</button>
+                                <button class="menu-item" onclick="activateTool('replace')">🔄 Replace</button>
+                                <button class="menu-item" onclick="activateTool('delete')">🗑️ Delete</button>
+                            </div>
+                        </div>
+
+                        <!-- Photo Filters Menu -->
+                        <div class="dropdown-menu" id="photoFiltersMenu">
+                            <div class="menu-content">
+                                <h5>Filter Effects</h5>
+                                <button class="menu-item" onclick="applyPhotoFilter('grayscale')">⚫ Grayscale</button>
+                                <button class="menu-item" onclick="applyPhotoFilter('sepia')">🟤 Sepia</button>
+                                <button class="menu-item" onclick="applyPhotoFilter('vintage')">📸 Vintage</button>
+                                <button class="menu-item" onclick="applyPhotoFilter('cool')">❄️ Cool</button>
+                                <button class="menu-item" onclick="applyPhotoFilter('warm')">🔥 Warm</button>
+                                <button class="menu-item" onclick="applyPhotoFilter('invert')">🔲 Invert</button>
+                            </div>
+                        </div>
+
+                        <!-- Photo Effects Menu -->
+                        <div class="dropdown-menu" id="photoEffectsMenu">
+                            <div class="menu-content">
+                                <h5>Effects</h5>
+                                <button class="menu-item" onclick="applyPhotoEffect('blur')">🌫️ Blur</button>
+                                <button class="menu-item" onclick="applyPhotoEffect('sharpen')">⚡ Sharpen</button>
+                                <button class="menu-item" onclick="applyPhotoEffect('glow')">💫 Glow</button>
+                                <button class="menu-item" onclick="applyPhotoEffect('vignette')">🎯 Vignette</button>
+                                <button class="menu-item" onclick="applyPhotoEffect('retouch')">🧴 Retouch</button>
+                                <button class="menu-item" onclick="activateTool('removeBG')">👤 Remove BG</button>
+                            </div>
+                        </div>
+
+                        <!-- Photo Adjust Menu -->
+                        <div class="dropdown-menu" id="photoAdjustMenu">
+                            <div class="menu-content">
+                                <h5>Adjustment Tools</h5>
+                                <button class="menu-item" onclick="toggleAdjustPanel('brightness')">☀️ Brightness</button>
+                                <button class="menu-item" onclick="toggleAdjustPanel('contrast')">◐ Contrast</button>
+                                <button class="menu-item" onclick="toggleAdjustPanel('saturation')">🎨 Saturation</button>
+                                <button class="menu-item" onclick="toggleAdjustPanel('hue')">🌈 Hue</button>
+                                <button class="menu-item" onclick="toggleAdjustPanel('opacity')">👻 Opacity</button>
+                                <button class="menu-item" onclick="toggleAdjustPanel('temperature')">🌡️ Temperature</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Adjustment Sliders -->
+                    <div class="control-group">
+                        <label for="brightness">Brightness: <span id="brightnessValue">100</span>%</label>
+                        <input type="range" id="brightness" min="0" max="200" value="100">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="contrast">Contrast: <span id="contrastValue">100</span>%</label>
+                        <input type="range" id="contrast" min="0" max="200" value="100">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="saturation">Saturation: <span id="saturationValue">100</span>%</label>
+                        <input type="range" id="saturation" min="0" max="200" value="100">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="hue">Hue: <span id="hueValue">0</span>°</label>
+                        <input type="range" id="hue" min="0" max="360" value="0">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="blur">Blur: <span id="blurValue">0</span>px</label>
+                        <input type="range" id="blur" min="0" max="20" value="0">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="rotate">Rotate: <span id="rotateValue">0</span>°</label>
+                        <input type="range" id="rotate" min="0" max="360" value="0">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="scale">Scale: <span id="scaleValue">100</span>%</label>
+                        <input type="range" id="scale" min="50" max="150" value="100">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="opacity">Opacity: <span id="opacityValue">100</span>%</label>
+                        <input type="range" id="opacity" min="0" max="100" value="100">
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="downloadPhoto()">Download Photo</button>
+                        <button class="btn btn-secondary" onclick="resetPhoto()">Reset</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
+
+    <!-- Video Editor Section -->
+    <section id="video" class="editor-section">
+        <div class="container">
+            <h2>Video Editor</h2>
+            
+            <div class="video-editor">
+                <div class="video-preview">
+                    <video id="videoPreview" controls>
+                        <p>Your browser does not support HTML5 video.</p>
+                    </video>
+                    <p class="placeholder" id="videoPlaceholder">Upload a video to start editing</p>
+                </div>
+
+                <div class="video-controls">
+                    <div class="control-group">
+                        <label for="videoInput">Upload Video:</label>
+                        <input type="file" id="videoInput" accept="video/*">
+                    </div>
+
+                    <!-- Video Edit Options -->
+                    <div class="quick-edit-section">
+                        <h4>Video Editing Tools</h4>
+                        <div class="edit-buttons-grid">
+                            <button class="edit-btn" onclick="toggleMenu('videoEditMenu')">
+                                ✂️ Edit
+                            </button>
+                            <button class="edit-btn" onclick="toggleMenu('videoAudioMenu')">
+                                🔊 Audio
+                            </button>
+                            <button class="edit-btn" onclick="toggleMenu('videoEffectsMenu')">
+                                ✨ Effects
+                            </button>
+                            <button class="edit-btn" onclick="toggleMenu('videoTransformMenu')">
+                                🎬 Transform
+                            </button>
+                        </div>
+
+                        <!-- Video Edit Menu -->
+                        <div class="dropdown-menu" id="videoEditMenu">
+                            <div class="menu-content">
+                                <h5>Video Editing</h5>
+                                <button class="menu-item" onclick="activateVideoTool('split')">✂️ Split</button>
+                                <button class="menu-item" onclick="activateVideoTool('crop')">🔲 Crop</button>
+                                <button class="menu-item" onclick="activateVideoTool('duplicate')">📋 Duplicate</button>
+                                <button class="menu-item" onclick="activateVideoTool('delete')">🗑️ Delete</button>
+                                <button class="menu-item" onclick="activateVideoTool('replace')">🔄 Replace</button>
+                                <button class="menu-item" onclick="activateVideoTool('freeze')">⏸️ Freeze</button>
+                                <button class="menu-item" onclick="activateVideoTool('reverse')">⏮️ Reverse</button>
+                            </div>
+                        </div>
+
+                        <!-- Video Audio Menu -->
+                        <div class="dropdown-menu" id="videoAudioMenu">
+                            <div class="menu-content">
+                                <h5>Audio Tools</h5>
+                                <button class="menu-item" onclick="activateVideoTool('extractAudio')">📤 Extract Audio</button>
+                                <button class="menu-item" onclick="activateVideoTool('isolateVoice')">🎤 Isolate Voice</button>
+                                <button class="menu-item" onclick="activateVideoTool('reduceNoise')">🔇 Reduce Noise</button>
+                                <button class="menu-item" onclick="activateVideoTool('enhanceVoice')">📢 Enhance Voice</button>
+                                <button class="menu-item" onclick="activateVideoTool('audioEffects')">🎶 Audio Effects</button>
+                                <button class="menu-item" onclick="toggleAdjustPanel('volume')">🔊 Volume</button>
+                                <button class="menu-item" onclick="activateVideoTool('beats')">🎵 Beats Detection</button>
+                            </div>
+                        </div>
+
+                        <!-- Video Effects Menu -->
+                        <div class="dropdown-menu" id="videoEffectsMenu">
+                            <div class="menu-content">
+                                <h5>Video Effects</h5>
+                                <button class="menu-item" onclick="activateVideoTool('animation')">🎨 Animation</button>
+                                <button class="menu-item" onclick="activateVideoTool('effects')">✨ Effects</button>
+                                <button class="menu-item" onclick="activateVideoTool('motionBlur')">⚡ Motion Blur</button>
+                                <button class="menu-item" onclick="activateVideoTool('overlay')">📐 Overlay</button>
+                                <button class="menu-item" onclick="activateVideoTool('relight')">💡 Relight</button>
+                                <button class="menu-item" onclick="activateVideoTool('filters')">🎬 Filters</button>
+                                <button class="menu-item" onclick="activateVideoTool('mask')">👤 Mask</button>
+                            </div>
+                        </div>
+
+                        <!-- Video Transform Menu -->
+                        <div class="dropdown-menu" id="videoTransformMenu">
+                            <div class="menu-content">
+                                <h5>Transform & Adjust</h5>
+                                <button class="menu-item" onclick="activateVideoTool('speed')">⏱️ Speed</button>
+                                <button class="menu-item" onclick="activateVideoTool('transform')">🔄 Transform</button>
+                                <button class="menu-item" onclick="activateVideoTool('autoReframe')">📺 Auto Reframe</button>
+                                <button class="menu-item" onclick="activateVideoTool('stabilization')">🎯 Stabilization</button>
+                                <button class="menu-item" onclick="toggleAdjustPanel('brightness')">☀️ Brightness</button>
+                                <button class="menu-item" onclick="toggleAdjustPanel('contrast')">◐ Contrast</button>
+                                <button class="menu-item" onclick="toggleAdjustPanel('opacity')">👻 Opacity</button>
+                                <button class="menu-item" onclick="activateVideoTool('unlink')">🔗 Unlink</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="videoSpeed">Playback Speed: <span id="speedValue">1.0</span>x</label>
+                        <input type="range" id="videoSpeed" min="0.5" max="2" step="0.25" value="1.0">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="videoVolume">Volume: <span id="volumeValue">100</span>%</label>
+                        <input type="range" id="videoVolume" min="0" max="100" value="100">
+                    </div>
+
+                    <div class="trim-section">
+                        <h4>Trim Video</h4>
+                        <p>Current Time: <span id="currentTime">0:00</span></p>
+                        <div class="trim-buttons">
+                            <button class="btn btn-small" onclick="markStart()">Mark Start</button>
+                            <button class="btn btn-small" onclick="markEnd()">Mark End</button>
+                            <button class="btn btn-small" onclick="resetTrim()">Reset Trim</button>
+                        </div>
+                        <p id="trimInfo" class="trim-info">No trim set</p>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="videoBrightness">Brightness: <span id="videoBrightnessValue">100</span>%</label>
+                        <input type="range" id="videoBrightness" min="0" max="200" value="100">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="videoContrast">Contrast: <span id="videoContrastValue">100</span>%</label>
+                        <input type="range" id="videoContrast" min="0" max="200" value="100">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="videoOpacity">Opacity: <span id="videoOpacityValue">100</span>%</label>
+                        <input type="range" id="videoOpacity" min="0" max="100" value="100">
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="downloadVideo()">Download Video</button>
+                        <button class="btn btn-secondary" onclick="resetVideo()">Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <h2>About MediaEditor</h2>
+            <p>MediaEditor is a free, online tool for editing photos and videos with professional features. No installation required - just upload your media and start editing!</p>
+            <div class="features">
+                <div class="feature">
+                    <h3>🖼️ Photo Editing</h3>
+                    <p>Crop, filter, retouch, remove background, and apply effects to your photos.</p>
+                </div>
+                <div class="feature">
+                    <h3>🎥 Video Editing</h3>
+                    <p>Split, trim, add effects, audio tools, stabilization, and advanced transforms.</p>
+                </div>
+                <div class="feature">
+                    <h3>⚡ Fast & Free</h3>
+                    <p>Edit your media instantly without any cost or software installation.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Notification Toast -->
+    <div id="notificationToast" class="notification-toast"></div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 MediaEditor. All rights reserved. Built with ❤️ by Royalking2112</p>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 </html>
